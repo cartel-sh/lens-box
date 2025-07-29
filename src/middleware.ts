@@ -3,14 +3,23 @@ import { NextResponse } from "next/server";
 import { getCookieAuth } from "./utils/getCookieAuth";
 
 export async function middleware(request: NextRequest) {
-  const { pathname, hostname } = request.nextUrl;
+  const { pathname, hostname, origin } = request.nextUrl;
   const { isValid: isAuthTokenValid } = getCookieAuth();
 
-  // Redirect from pingpad.io to lens.box
-  if (hostname === "pingpad.io" || hostname === "www.pingpad.io") {
-    const newUrl = new URL(request.url);
-    newUrl.hostname = "lens.box";
-    return NextResponse.redirect(newUrl, { status: 301 });
+  const host = request.headers.get("host") || "";
+  const xForwardedHost = request.headers.get("x-forwarded-host") || "";
+  
+  console.log("Middleware debug:", { hostname, host, xForwardedHost, origin, pathname });
+  
+  if (
+    hostname.includes("pingpad.io") || 
+    host.includes("pingpad.io") ||
+    xForwardedHost.includes("pingpad.io") ||
+    origin.includes("pingpad.io")
+  ) {
+    const redirectUrl = `https://lens.box${pathname}`;
+    console.log("Redirecting to:", redirectUrl);
+    return NextResponse.redirect(redirectUrl, { status: 301 });
   }
 
   // Check for the .lens postfix
@@ -47,5 +56,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|logo.png|home|favicon.ico).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 };
