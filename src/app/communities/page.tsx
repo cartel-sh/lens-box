@@ -5,7 +5,7 @@ import Groups from "~/components/Groups";
 
 export const metadata: Metadata = {
   title: "Communities",
-  description: "Discover and join communities on Pingpad",
+  description: "Discover and join communities on Box",
 };
 
 export default function GroupsPage({ searchParams }: { searchParams?: { q?: string } }) {

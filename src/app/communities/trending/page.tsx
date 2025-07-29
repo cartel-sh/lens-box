@@ -5,7 +5,7 @@ import TrendingCommunitiesPage from "~/components/TrendingCommunitiesPage";
 
 export const metadata: Metadata = {
   title: "Trending Communities",
-  description: "Discover trending communities on Pingpad",
+  description: "Discover trending communities on Box",
 };
 
 export default function TrendingPage() {

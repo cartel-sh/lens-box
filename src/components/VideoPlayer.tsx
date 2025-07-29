@@ -352,7 +352,7 @@ export const VideoPlayer = ({
     if ("mediaSession" in navigator && shown) {
       navigator.mediaSession.metadata = new MediaMetadata({
         title: authorHandle ? `Video by @${authorHandle}` : "Video",
-        artist: "Pingpad",
+        artist: "Box",
         artwork: [{ src: preview || generatedThumbnail || "", sizes: "512x512", type: "image/jpeg" }],
       });
 

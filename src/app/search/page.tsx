@@ -9,10 +9,10 @@ export async function generateMetadata({ searchParams }: { searchParams: { q: st
   const title = `Searching for ${query}`;
   return {
     title,
-    description: `@${query} on Pingpad`,
+    description: `@${query} on Box`,
     openGraph: {
       title,
-      description: `@${query} on Pingpad`,
+      description: `@${query} on Box`,
       images: [
         {
           url: "/logo.png",

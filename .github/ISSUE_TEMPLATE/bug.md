@@ -1,6 +1,6 @@
 ---
 name: bug
-about: Pingpad improvement report
+about: Lens Box improvement report
 title: "[bug] "
 labels: bug
 assignees: ''

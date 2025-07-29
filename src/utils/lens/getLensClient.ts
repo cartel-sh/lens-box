@@ -5,7 +5,7 @@ const isServer = typeof window === "undefined";
 
 const publicClient = PublicClient.create({
   environment: mainnet,
-  origin: "https://pingpad.io",
+  origin: "https://lens.box",
   storage: isServer ? cookieStorage : clientCookieStorage,
 });
 

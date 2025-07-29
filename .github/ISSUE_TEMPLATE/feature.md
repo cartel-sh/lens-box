@@ -1,6 +1,6 @@
 ---
 name: feature
-about: Pingpad feature suggestions
+about: Lens Box feature suggestions
 title: "[feat]"
 labels: enhancement
 assignees: ''

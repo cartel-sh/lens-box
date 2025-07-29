@@ -51,9 +51,9 @@ export const Navigation = () => {
             <CrownIcon size={18} />
             best
           </NavigationCarouselItem>
-          <NavigationCarouselItem href={"/c/pingpad"}>
+          <NavigationCarouselItem href={"/c/box"}>
             <AtSignIcon size={18} />
-            pingpad
+            box
           </NavigationCarouselItem>
           <NavigationCarouselItem href={"/c/lens"}>
             <SproutIcon size={18} />

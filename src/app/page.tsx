@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Pingpad",
-  description: "reach your people on pingpad",
+  title: "Box",
+  description: "reach your people on box",
   openGraph: {
-    title: "Pingpad",
-    description: "reach your people on pingpad",
+    title: "Box",
+    description: "reach your people on box",
     images: [
       {
         url: "/logo.png",

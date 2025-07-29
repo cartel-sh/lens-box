@@ -2,7 +2,7 @@
 
 **what?**
 
-clarity paves the way for brilliance. [ping](https://pingpad.io) is a minimalistic decentralized social platform, focusing on clear and efficient solutions.
+clarity paves the way for brilliance. [box](https://lens.box) is a minimalistic decentralized social platform, focusing on clear and efficient solutions.
 
 **how?**
 
@@ -15,7 +15,7 @@ built on top of [lens](https://lens.xyz), media is stored on [grove](https://gro
 
 1. Clone the repository:
    ```sh
-   git clone https://github.com/pingpad-io/ping.git && cd ping
+   git clone https://github.com/cartel-sh/lens-box.git && cd lens-box
    ```
 
 2. Create a `.env` file:
