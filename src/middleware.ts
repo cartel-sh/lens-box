@@ -3,8 +3,15 @@ import { NextResponse } from "next/server";
 import { getCookieAuth } from "./utils/getCookieAuth";
 
 export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+  const { pathname, hostname } = request.nextUrl;
   const { isValid: isAuthTokenValid } = getCookieAuth();
+
+  // Redirect from pingpad.io to lens.box
+  if (hostname === "pingpad.io" || hostname === "www.pingpad.io") {
+    const newUrl = new URL(request.url);
+    newUrl.hostname = "lens.box";
+    return NextResponse.redirect(newUrl, { status: 301 });
+  }
 
   // Check for the .lens postfix
   const lensNamespace = /^\/u\/(.+)\.lens$/;
