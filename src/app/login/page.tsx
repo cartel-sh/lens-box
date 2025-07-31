@@ -117,7 +117,7 @@ export default function LoginPage() {
         throw new Error(`Failed to get authenticated client: ${authenticated.error.message}`);
       }
 
-      toast.success("Welcome to Ping!");
+      toast.success("Welcome to Box!");
 
       const username = account.username?.localName || account.address;
 
@@ -191,7 +191,7 @@ export default function LoginPage() {
               className="space-y-6 w-full"
             >
               <div className="text-center">
-                <h1 className="text-2xl font-bold mb-1">Login to Ping</h1>
+                <h1 className="text-2xl font-bold mb-1">Login to Box</h1>
                 <p className="text-muted-foreground">Select a wallet to connect</p>
               </div>
               <ConnectedWalletLabel />
