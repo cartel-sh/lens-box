@@ -1,9 +1,8 @@
 "use client";
 
-import { Bookmark, CompassIcon, Heart, HomeIcon, LogInIcon, PlusIcon, Users } from "lucide-react";
+import { Bookmark, Box, CompassIcon, Heart, LogInIcon, PackageOpen, PlusIcon, Users } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import PingLogo from "~/components/icons/PingLogo";
 import { Dock } from "~/components/ui/dock";
 import { cn } from "~/utils";
 import { useNotifications } from "../notifications/NotificationsContext";
@@ -39,12 +38,12 @@ export function Menu({ isAuthenticated, handle, user }: MenuClientProps) {
         {
           icon:
             pathname === "/home"
-              ? HomeIcon
+              ? PackageOpen
               : pathname === "/explore"
                 ? CompassIcon
                 : pathname === "/communities"
                   ? Users
-                  : PingLogo,
+                  : Box,
           label: "Home",
           onClick: () => router.push("/home"),
           isActive: pathname === "/home" || pathname === "/explore" || pathname === "/communities",
@@ -55,7 +54,7 @@ export function Menu({ isAuthenticated, handle, user }: MenuClientProps) {
                 className="relative flex cursor-default select-none items-center rounded-lg px-3 py-2 text-base outline-none transition-all duration-200 active:scale-[0.96] hover:bg-accent hover:text-accent-foreground w-full text-left"
                 onClick={() => router.push("/home")}
               >
-                <HomeIcon size={16} />
+                <PackageOpen size={16} />
                 <span className="ml-3">Home</span>
               </button>
               <button
@@ -135,12 +134,12 @@ export function Menu({ isAuthenticated, handle, user }: MenuClientProps) {
         {
           icon:
             pathname === "/home"
-              ? HomeIcon
+              ? PackageOpen
               : pathname === "/explore"
                 ? CompassIcon
                 : pathname === "/communities"
                   ? Users
-                  : PingLogo,
+                  : Box,
           label: "Home",
           onClick: () => router.push("/home"),
           isActive: pathname === "/home" || pathname === "/explore" || pathname === "/communities",
@@ -151,7 +150,7 @@ export function Menu({ isAuthenticated, handle, user }: MenuClientProps) {
                 className="relative flex cursor-default select-none items-center rounded-lg px-3 py-2 text-base outline-none transition-all duration-200 active:scale-[0.96] hover:bg-accent hover:text-accent-foreground w-full text-left"
                 onClick={() => router.push("/home")}
               >
-                <HomeIcon size={16} />
+                <PackageOpen size={16} />
                 <span className="ml-3">Home</span>
               </button>
               <button
