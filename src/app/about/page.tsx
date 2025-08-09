@@ -26,7 +26,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 const AboutPage = () => {
   return (
     <>
-      <div className="flex flex-col max-w-2xl mx-auto items-center p-2 sm:p-4 md:p-20 gap-8">
+      <div className="flex flex-col max-w-3xl mx-auto items-center p-2 sm:p-4 md:p-20 gap-8">
         <h1 className="font-bold text-4xl">About Box</h1>
         <h2 className="text-2xl">a focus-first decentralized social</h2>
         <div className="flex flex-col text-center  gap-8 p-2 md:p-8">

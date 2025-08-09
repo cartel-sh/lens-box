@@ -5,7 +5,7 @@ export const CommentSkeleton = ({ isLastComment = false }: { isLastComment?: boo
         <span className="min-h-full flex flex-col justify-start items-center relative">
           <div className="shrink-0 grow-0 rounded-full w-6 h-6 bg-background/20 animate-pulse" />
         </span>
-        <div className="flex w-3/4 shrink group max-w-2xl grow flex-col place-content-start gap-2.5">
+        <div className="flex w-3/4 shrink group max-w-3xl grow flex-col place-content-start gap-2.5">
           <div className="flex mt-1 flex-row items-center gap-2">
             <div className="h-4 w-16 bg-background/40 rounded animate-pulse" />
             <div className="h-4 w-8 bg-background/40 rounded animate-pulse" />

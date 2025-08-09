@@ -199,7 +199,7 @@ export const PostView = ({
                     <UserAvatar user={item.author} />
                   </div>
                 </span>
-                <div className="flex w-3/4 shrink group max-w-2xl grow flex-col place-content-start">
+                <div className="flex w-3/4 shrink group max-w-3xl grow flex-col place-content-start">
                   {!settings.isComment && !settings.inThread && <RepostInfo post={item} />}
                   {!settings.isComment && !settings.inThread && !item.quoteOn && !item.isRepost && (
                     <ReplyInfo post={item} />

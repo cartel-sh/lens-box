@@ -748,7 +748,7 @@ export const VideoPlayer = ({
                         />
 
                         <div className="absolute bottom-0 w-full p-3 z-[65]">
-                          <div className="max-w-2xl mx-auto w-full">
+                          <div className="max-w-3xl mx-auto w-full">
                             <div
                               className="bg-white/20 h-1 rounded-full cursor-pointer hover:h-1.5 transition-all duration-200 relative"
                               onClick={(e) => {
@@ -781,13 +781,12 @@ export const VideoPlayer = ({
                               }}
                             >
                               <div
-                                className={`bg-white h-full transition-all rounded-full ease-linear ${
-                                  isProgressClicked || progressRecentlyClicked 
-                                    ? "duration-75" 
-                                    : playing 
-                                      ? "duration-300" 
+                                className={`bg-white h-full transition-all rounded-full ease-linear ${isProgressClicked || progressRecentlyClicked
+                                    ? "duration-75"
+                                    : playing
+                                      ? "duration-300"
                                       : "duration-75"
-                                }`}
+                                  }`}
                                 style={{ width: `${videoProgress * 100}%` }}
                               />
                             </div>
