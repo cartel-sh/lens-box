@@ -181,6 +181,10 @@ export function usePostSubmission() {
           setPosting(false);
           return;
         }
+        
+        // Get the authenticated user's address for collect recipients
+        const authenticatedUser = client.getAuthenticatedUser();
+        const userAddress = authenticatedUser.isOk() ? authenticatedUser.value?.address : null;
 
         if (editingPost) {
           const result = await editPost(client, {
@@ -221,16 +225,33 @@ export function usePostSubmission() {
               collectAction.simpleCollect.followerOnly = true;
             }
             
-            if (collectConfig.price) {
-              // For now, we'll use native token (MATIC) pricing
-              // In production, you'd need to handle different currencies properly
-              collectAction.simpleCollect.amount = {
-                value: collectConfig.price.amount,
-                asset: {
-                  currency: collectConfig.price.currency === "MATIC" ? "MATIC" : "USDC",
-                  decimals: collectConfig.price.currency === "MATIC" ? 18 : 6,
-                },
-              };
+            if (collectConfig.price && collectConfig.price.amount) {
+              // Set up paid collect with GHO or WGHO
+              const payToCollect: any = {};
+              
+              // Add recipients if we have the user's address
+              // Recipients array must have at least one entry with 100% going to author
+              if (userAddress) {
+                payToCollect.recipients = [
+                  {
+                    address: userAddress,
+                    percent: 100, // 100% goes to the post author
+                  },
+                ];
+              }
+              
+              if (collectConfig.price.currency === "GHO") {
+                // Native GHO payment
+                payToCollect.native = collectConfig.price.amount; // BigDecimal as string
+              } else {
+                // WGHO (ERC-20) payment on Lens Mainnet
+                payToCollect.erc20 = {
+                  value: collectConfig.price.amount, // BigDecimal as string
+                  currency: "0x6bDc36E20D267Ff0dd6097799f82e78907105e2F", // WGHO on Lens Mainnet
+                };
+              }
+              
+              collectAction.simpleCollect.payToCollect = payToCollect;
             }
             
             actions.push(collectAction);

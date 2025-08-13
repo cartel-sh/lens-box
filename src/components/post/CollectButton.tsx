@@ -50,17 +50,16 @@ export function CollectButton({ post, variant = "post" }: CollectButtonProps) {
 
       const data = await response.json();
 
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to collect");
+      if (!response.ok || !data.result) {
+        throw new Error(data.message || data.error || "Failed to collect");
       }
 
-      // Trigger animation on success
-      if (collectButtonRef.current && !hasCollected) {
+      // Only trigger animation and success if actually collected
+      if (data.result && collectButtonRef.current && !hasCollected) {
         triggerExplosion("collect", collectButtonRef.current);
+        toast.success("Post collected successfully!");
+        setIsModalOpen(false);
       }
-
-      toast.success("Post collected successfully!");
-      setIsModalOpen(false);
     } catch (error: any) {
       console.error("Failed to collect:", error);
       toast.error(error.message || "Failed to collect post");

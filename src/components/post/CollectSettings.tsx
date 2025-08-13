@@ -18,7 +18,7 @@ export interface CollectConfig {
   followersOnly?: boolean;
   price?: {
     amount: string;
-    currency: "MATIC" | "USDC";
+    currency: "GHO" | "WGHO";
   };
 }
 
@@ -29,6 +29,7 @@ interface CollectSettingsProps {
 
 export function CollectSettings({ config, onChange }: CollectSettingsProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [localPrice, setLocalPrice] = useState(config.price?.amount || "");
 
   const handleToggle = (enabled: boolean) => {
     onChange({ ...config, enabled });
@@ -43,6 +44,7 @@ export function CollectSettings({ config, onChange }: CollectSettingsProps) {
   };
 
   const handlePriceChange = (amount: string) => {
+    setLocalPrice(amount);
     if (!amount) {
       const { price: _, ...rest } = config;
       onChange(rest);
@@ -51,13 +53,13 @@ export function CollectSettings({ config, onChange }: CollectSettingsProps) {
         ...config,
         price: {
           amount,
-          currency: config.price?.currency || "MATIC",
+          currency: config.price?.currency || "GHO",
         },
       });
     }
   };
 
-  const handleCurrencyChange = (currency: "MATIC" | "USDC") => {
+  const handleCurrencyChange = (currency: "GHO" | "WGHO") => {
     if (config.price) {
       onChange({
         ...config,
@@ -98,13 +100,27 @@ export function CollectSettings({ config, onChange }: CollectSettingsProps) {
       </div>
 
       {config.enabled && (
-        <Popover open={isOpen} onOpenChange={setIsOpen}>
+        <Popover open={isOpen} onOpenChange={(open) => {
+          // Only allow closing via the Done button or escape key
+          if (!open && isOpen) {
+            // Don't close if we're just interacting with inputs
+            return;
+          }
+          setIsOpen(open);
+        }}>
           <PopoverTrigger asChild>
             <Button variant="ghost" size="sm" className="h-8 px-2">
               Settings
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-80" align="end">
+          <PopoverContent 
+            className="w-80" 
+            align="end" 
+            onOpenAutoFocus={(e) => e.preventDefault()}
+            onInteractOutside={(e) => e.preventDefault()}
+            onPointerDownOutside={(e) => e.preventDefault()}
+            onEscapeKeyDown={() => setIsOpen(false)}
+          >
             <div className="space-y-4">
               <div className="space-y-2">
                 <h4 className="font-medium text-sm">Collect Settings</h4>
@@ -125,6 +141,7 @@ export function CollectSettings({ config, onChange }: CollectSettingsProps) {
                     placeholder="Unlimited"
                     value={config.collectLimit || ""}
                     onChange={(e) => handleLimitChange(e.target.value)}
+                    onKeyDown={(e) => e.stopPropagation()}
                     min="1"
                     className="h-8 text-sm"
                   />
@@ -139,15 +156,20 @@ export function CollectSettings({ config, onChange }: CollectSettingsProps) {
                     Price
                   </Label>
                   <div className="flex gap-2">
-                    <Input
+                    <input
                       id="collect-price"
-                      type="number"
+                      type="text"
+                      inputMode="decimal"
                       placeholder="Free"
-                      value={config.price?.amount || ""}
-                      onChange={(e) => handlePriceChange(e.target.value)}
-                      min="0"
-                      step="0.01"
-                      className="h-8 text-sm flex-1"
+                      value={localPrice}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        // Allow only numbers and decimal point
+                        if (value === "" || /^\d*\.?\d*$/.test(value)) {
+                          handlePriceChange(value);
+                        }
+                      }}
+                      className="flex h-8 w-full rounded-md border border-input bg-background px-3 py-1 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 flex-1"
                     />
                     {config.price && (
                       <Select
@@ -158,8 +180,8 @@ export function CollectSettings({ config, onChange }: CollectSettingsProps) {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="MATIC">MATIC</SelectItem>
-                          <SelectItem value="USDC">USDC</SelectItem>
+                          <SelectItem value="GHO">GHO</SelectItem>
+                          <SelectItem value="WGHO">WGHO</SelectItem>
                         </SelectContent>
                       </Select>
                     )}
@@ -179,6 +201,7 @@ export function CollectSettings({ config, onChange }: CollectSettingsProps) {
                     type="datetime-local"
                     value={config.endsAt || ""}
                     onChange={(e) => handleEndDateChange(e.target.value)}
+                    onKeyDown={(e) => e.stopPropagation()}
                     min={new Date().toISOString().slice(0, 16)}
                     className="h-8 text-sm"
                   />
@@ -208,7 +231,12 @@ export function CollectSettings({ config, onChange }: CollectSettingsProps) {
                   size="sm"
                   variant="outline"
                   className="w-full h-8 text-xs"
-                  onClick={() => setIsOpen(false)}
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setIsOpen(false);
+                  }}
                 >
                   Done
                 </Button>

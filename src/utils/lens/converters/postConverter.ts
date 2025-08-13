@@ -76,14 +76,32 @@ function getPostActions(post: LensPost): any {
   if (post.actions && Array.isArray(post.actions)) {
     const collectAction = post.actions.find((action: any) => action.__typename === "SimpleCollectAction");
     if (collectAction) {
+      const collect = collectAction as any;
+      
+      // Extract price from payToCollect field
+      let price = null;
+      if (collect.payToCollect) {
+        if (collect.payToCollect.native) {
+          // Native GHO payment
+          price = {
+            amount: collect.payToCollect.native,
+            currency: "GHO",
+          };
+        } else if (collect.payToCollect.erc20) {
+          // ERC-20 payment (WGHO or other tokens)
+          price = {
+            amount: collect.payToCollect.erc20.value,
+            currency: collect.payToCollect.erc20.currency === "0x6bDc36E20D267Ff0dd6097799f82e78907105e2F" ? "WGHO" : "ERC20",
+          };
+        }
+      }
+      
       actions.collectDetails = {
-        collectLimit: (collectAction as any).collectLimit,
-        endsAt: (collectAction as any).endsAt,
-        followersOnly: (collectAction as any).followerOnly,
-        price: (collectAction as any).amount ? {
-          amount: (collectAction as any).amount.value,
-          currency: (collectAction as any).amount.asset?.currency,
-        } : null,
+        collectLimit: collect.collectLimit,
+        endsAt: collect.endsAt,
+        followersOnly: collect.followerOnly,
+        price: price,
+        recipients: collect.payToCollect?.recipients,
       };
     }
   }

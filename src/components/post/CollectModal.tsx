@@ -26,6 +26,11 @@ export function CollectModal({
 }: CollectModalProps) {
   // Extract collect details from post (this would come from the post data)
   const collectDetails = (post as any).actions?.collectDetails || {};
+  
+  // Debug logging to see what we're getting
+  console.log("Post collect details:", collectDetails);
+  console.log("Post actions:", (post as any).actions);
+  
   const price = collectDetails.price;
   const collectLimit = collectDetails.collectLimit;
   const endsAt = collectDetails.endsAt;
@@ -33,8 +38,10 @@ export function CollectModal({
   const totalCollected = (post as any).stats?.collects || 0;
 
   const formatPrice = (price: any) => {
-    if (!price) return "Free";
-    return `${price.amount} ${price.currency}`;
+    if (!price || !price.amount) return "Free";
+    // Format the currency display
+    const currency = price.currency || "GHO";
+    return `${price.amount} ${currency}`;
   };
 
   const formatEndDate = (dateString: string) => {
@@ -68,7 +75,9 @@ export function CollectModal({
 
         <div className="space-y-4">
           <div className="flex items-start gap-3">
-            <UserAvatar user={post.author} />
+            <div className="w-10 h-10 rounded-2xl overflow-hidden [&_>*]:rounded-2xl">
+              <UserAvatar user={post.author} link={false} card={false} />
+            </div>
             <div className="flex-1">
               <p className="font-medium">@{post.author.username}</p>
               <p className="text-sm text-muted-foreground line-clamp-2">
@@ -153,11 +162,8 @@ export function CollectModal({
           )}
         </div>
 
-        <DialogFooter className="gap-2">
-          <Button variant="outline" onClick={onClose} disabled={isCollecting}>
-            Cancel
-          </Button>
-          <Button onClick={onCollect} disabled={!canCollect || isCollecting}>
+        <DialogFooter>
+          <Button onClick={onCollect} disabled={!canCollect || isCollecting} className="w-full">
             {isCollecting ? (
               <>
                 <LoadingSpinner />
@@ -166,10 +172,7 @@ export function CollectModal({
             ) : hasCollected ? (
               "Already Collected"
             ) : (
-              <>
-                <SparklesIcon className="w-4 h-4 mr-1" />
-                Collect {price?.amount ? `for ${formatPrice(price)}` : "for Free"}
-              </>
+              `Collect ${price?.amount ? `for ${formatPrice(price)}` : "for Free"}`
             )}
           </Button>
         </DialogFooter>

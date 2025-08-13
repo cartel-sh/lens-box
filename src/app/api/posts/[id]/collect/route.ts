@@ -77,17 +77,18 @@ export async function POST(_req: NextRequest, { params }: { params: { id: string
 
     return NextResponse.json(
       {
-        result: true,
-        message: "Collect functionality will be available when Lens SDK adds executePostAction support",
+        result: false,
+        error: "Collect functionality is pending Lens SDK executePostAction support",
+        message: "The collect feature is not yet functional. Waiting for Lens Protocol SDK update.",
         collectDetails: {
-          price: collectDetails?.amount,
+          price: collectDetails?.payToCollect?.native || collectDetails?.payToCollect?.erc20,
           collectLimit: collectDetails?.collectLimit,
           endsAt: collectDetails?.endsAt,
           followersOnly: collectDetails?.followerOnly,
           totalCollected: publication.stats?.collects || 0,
         },
       },
-      { status: 200 },
+      { status: 501 }, // 501 Not Implemented
     );
   } catch (error) {
     console.error("Failed to collect post: ", error.message);
