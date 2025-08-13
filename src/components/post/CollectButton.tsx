@@ -1,9 +1,11 @@
 "use client";
 
 import type { Post } from "@cartel-sh/ui";
+import { handleOperationWith } from "@lens-protocol/client/viem";
 import { SparklesIcon } from "lucide-react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
+import { useWalletClient } from "wagmi";
 import { useUser } from "~/components/user/UserContext";
 import { useExplosion } from "../ExplosionPortal";
 import { ReactionButton } from "../ReactionButton";
@@ -17,6 +19,7 @@ interface CollectButtonProps {
 export function CollectButton({ post, variant = "post" }: CollectButtonProps) {
   const { requireAuth } = useUser();
   const { triggerExplosion } = useExplosion();
+  const { data: walletClient } = useWalletClient();
   const collectButtonRef = useRef<HTMLSpanElement>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCollecting, setIsCollecting] = useState(false);
@@ -50,13 +53,35 @@ export function CollectButton({ post, variant = "post" }: CollectButtonProps) {
 
       const data = await response.json();
 
-      if (!response.ok || !data.result) {
-        throw new Error(data.message || data.error || "Failed to collect");
+      if (!response.ok) {
+        throw new Error(data.error || data.message || "Failed to collect");
       }
 
-      // Only trigger animation and success if actually collected
-      if (data.result && collectButtonRef.current && !hasCollected) {
-        triggerExplosion("collect", collectButtonRef.current);
+      // Handle wallet signature if needed
+      if (data.needsWalletSignature && data.result && walletClient) {
+        try {
+          // Execute the transaction with wallet
+          const txResult = await handleOperationWith(walletClient as any)(data.result);
+          
+          if (txResult.isErr()) {
+            throw new Error(txResult.error.message || "Transaction failed");
+          }
+          
+          // Success!
+          if (collectButtonRef.current && !hasCollected) {
+            triggerExplosion("collect", collectButtonRef.current);
+          }
+          toast.success("Post collected successfully! Transaction: " + txResult.value);
+          setIsModalOpen(false);
+        } catch (walletError: any) {
+          console.error("Wallet transaction failed:", walletError);
+          throw new Error(walletError.message || "Wallet transaction failed");
+        }
+      } else if (!data.needsWalletSignature) {
+        // Gasless transaction completed
+        if (collectButtonRef.current && !hasCollected) {
+          triggerExplosion("collect", collectButtonRef.current);
+        }
         toast.success("Post collected successfully!");
         setIsModalOpen(false);
       }

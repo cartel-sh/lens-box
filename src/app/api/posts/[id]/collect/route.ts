@@ -1,3 +1,4 @@
+import { postId } from "@lens-protocol/client";
 import { executePostAction, fetchPost } from "@lens-protocol/client/actions";
 import { handleOperationWith } from "@lens-protocol/client/viem";
 import { type NextRequest, NextResponse } from "next/server";
@@ -21,7 +22,7 @@ export async function POST(_req: NextRequest, { params }: { params: { id: string
     }
 
     const postResult = await fetchPost(sessionClient, {
-      post: id,
+      post: postId(id),
     });
 
     if (postResult.isErr()) {
@@ -62,7 +63,7 @@ export async function POST(_req: NextRequest, { params }: { params: { id: string
     // Execute the collect action
     try {
       const result = await executePostAction(sessionClient, {
-        post: id,
+        post: postId(id),
         action: {
           simpleCollect: {
             selected: true,
