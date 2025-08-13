@@ -14,6 +14,7 @@ interface CollectModalProps {
   onCollect: () => void;
   isCollecting: boolean;
   hasCollected: boolean;
+  insufficientBalance?: boolean;
 }
 
 export function CollectModal({
@@ -23,13 +24,10 @@ export function CollectModal({
   onCollect,
   isCollecting,
   hasCollected,
+  insufficientBalance = false,
 }: CollectModalProps) {
   // Extract collect details from post (this would come from the post data)
   const collectDetails = (post as any).actions?.collectDetails || {};
-  
-  // Debug logging to see what we're getting
-  console.log("Post collect details:", collectDetails);
-  console.log("Post actions:", (post as any).actions);
   
   const price = collectDetails.price;
   const collectLimit = collectDetails.collectLimit;
@@ -160,10 +158,18 @@ export function CollectModal({
               </p>
             </div>
           )}
+
+          {insufficientBalance && !hasCollected && (
+            <div className="rounded-lg bg-orange-500/10 border border-orange-500/20 p-3">
+              <p className="text-sm text-orange-600 dark:text-orange-400">
+                Insufficient balance. You need {formatPrice(price)} to collect this post.
+              </p>
+            </div>
+          )}
         </div>
 
         <DialogFooter>
-          <Button onClick={onCollect} disabled={!canCollect || isCollecting} className="w-full">
+          <Button onClick={onCollect} disabled={!canCollect || isCollecting || insufficientBalance} className="w-full">
             {isCollecting ? (
               <>
                 <LoadingSpinner />
@@ -171,6 +177,8 @@ export function CollectModal({
               </>
             ) : hasCollected ? (
               "Already Collected"
+            ) : insufficientBalance ? (
+              "Insufficient Balance"
             ) : (
               `Collect ${price?.amount ? `for ${formatPrice(price)}` : "for Free"}`
             )}

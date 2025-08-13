@@ -42,7 +42,9 @@ export async function POST(_req: NextRequest, { params }: { params: { id: string
     ) as any;
     
     if (!collectDetails) {
-      return NextResponse.json({ error: "Post does not have collect enabled", result: false }, { status: 400 });
+      console.log("Post actions:", publication.actions);
+      console.log("Post operations:", publication.operations);
+      return NextResponse.json({ error: "This post cannot be collected. The author has not enabled collect on this post.", result: false }, { status: 400 });
     }
 
     // Check if user has already collected
@@ -73,9 +75,23 @@ export async function POST(_req: NextRequest, { params }: { params: { id: string
 
       if (result.isErr()) {
         console.error("Failed to execute collect action:", result.error);
+        
+        // Check if it's an insufficient balance error
+        const errorMessage = result.error.message || "Failed to execute collect action";
+        if (errorMessage.includes("Not enough balance") || errorMessage.includes("insufficient")) {
+          return NextResponse.json(
+            { 
+              error: errorMessage,
+              insufficientBalance: true,
+              result: false 
+            }, 
+            { status: 400 }
+          );
+        }
+        
         return NextResponse.json(
           { 
-            error: result.error.message || "Failed to execute collect action",
+            error: errorMessage,
             result: false 
           }, 
           { status: 500 }
