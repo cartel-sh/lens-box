@@ -3,9 +3,8 @@
 import type { Post } from "@cartel-sh/ui";
 import { chains } from "@lens-chain/sdk/viem";
 import { handleOperationWith } from "@lens-protocol/client/viem";
-import { ExternalLinkIcon } from "lucide-react";
+import { ExternalLinkIcon, Handbag } from "lucide-react";
 import { useRef, useState } from "react";
-import { CiBag1 } from "react-icons/ci";
 import { toast } from "sonner";
 import { useAccount, useSwitchChain, useWalletClient } from "wagmi";
 import { useUser } from "~/components/user/UserContext";
@@ -186,7 +185,15 @@ export function CollectButton({ post, variant = "post" }: CollectButtonProps) {
             count: collectStats,
             isActive: hasCollected,
           }}
-          icon={<CiBag1 className="w-4 h-4" />}
+          icon={
+            <Handbag 
+              size={variant === "post" ? 18 : 16}
+              strokeWidth={1.2}
+              stroke={hasCollected ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))"}
+              fill="none"
+              className="transition-all duration-200"
+            />
+          }
           onClick={handleCollectClick}
         />
       </span>

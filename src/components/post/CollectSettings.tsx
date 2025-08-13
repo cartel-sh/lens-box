@@ -1,9 +1,8 @@
 "use client";
 
 import { format } from "date-fns";
-import { ChevronDownIcon, SparklesIcon } from "lucide-react";
+import { ChevronDownIcon, Handbag, SparklesIcon } from "lucide-react";
 import { useState } from "react";
-import { CiBag1 } from "react-icons/ci";
 import { Button } from "../ui/button";
 import { Calendar } from "../ui/calendar";
 import { Card } from "../ui/card";
@@ -120,7 +119,7 @@ export function CollectSettings({ config, onChange }: CollectSettingsProps) {
               }
             }}
           >
-            <CiBag1 className="h-5 w-5" />
+            <Handbag className={`h-5 w-5 ${config.enabled ? "text-primary" : "text-muted-foreground"}`} strokeWidth={1.2} />
           </Button>
         </PopoverTrigger>
           <PopoverContent 

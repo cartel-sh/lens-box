@@ -81,7 +81,7 @@
         "jwt-decode": "^4.0.0",
         "lexical": "^0.32.1",
         "lexical-anchorpoint": "^0.0.2-alpha.6",
-        "lucide-react": "^0.511.0",
+        "lucide-react": "^0.539.0",
         "metascraper": "^5.46.9",
         "metascraper-author": "^5.46.5",
         "metascraper-date": "^5.46.5",
@@ -1979,7 +1979,7 @@
 
     "lru-queue": ["lru-queue@0.1.0", "", { "dependencies": { "es5-ext": "~0.10.2" } }, "sha512-BpdYkt9EvGl8OfWHDQPISVpcl5xZthb+XPsbELj5AQXxIC8IriDZIQYjBJPEm5rS420sjZ0TLEzRcq5KdBhYrQ=="],
 
-    "lucide-react": ["lucide-react@0.511.0", "", { "peerDependencies": { "react": "^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0" } }, "sha512-VK5a2ydJ7xm8GvBeKLS9mu1pVK6ucef9780JVUjw6bAjJL/QXnd4Y0p7SPeOUMC27YhzNCZvm5d/QX0Tp3rc0w=="],
+    "lucide-react": ["lucide-react@0.539.0", "", { "peerDependencies": { "react": "^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0" } }, "sha512-VVISr+VF2krO91FeuCrm1rSOLACQUYVy7NQkzrOty52Y8TlTPcXcMdQFj9bYzBgXbWCiywlwSZ3Z8u6a+6bMlg=="],
 
     "make-fetch-happen": ["make-fetch-happen@14.0.3", "", { "dependencies": { "@npmcli/agent": "^3.0.0", "cacache": "^19.0.1", "http-cache-semantics": "^4.1.1", "minipass": "^7.0.2", "minipass-fetch": "^4.0.0", "minipass-flush": "^1.0.5", "minipass-pipeline": "^1.2.4", "negotiator": "^1.0.0", "proc-log": "^5.0.0", "promise-retry": "^2.0.1", "ssri": "^12.0.0" } }, "sha512-QMjGbFTP0blj97EeidG5hk/QhKQ3T4ICckQGLgz38QF7Vgbk6e6FTARN8KhKxyBbWn8R0HU+bnw8aSoFPD4qtQ=="],
 
