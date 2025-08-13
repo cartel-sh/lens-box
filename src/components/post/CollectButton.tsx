@@ -3,8 +3,9 @@
 import type { Post } from "@cartel-sh/ui";
 import { chains } from "@lens-chain/sdk/viem";
 import { handleOperationWith } from "@lens-protocol/client/viem";
-import { ExternalLinkIcon, SparklesIcon } from "lucide-react";
+import { ExternalLinkIcon } from "lucide-react";
 import { useRef, useState } from "react";
+import { CiBag1 } from "react-icons/ci";
 import { toast } from "sonner";
 import { useAccount, useSwitchChain, useWalletClient } from "wagmi";
 import { useUser } from "~/components/user/UserContext";
@@ -185,7 +186,7 @@ export function CollectButton({ post, variant = "post" }: CollectButtonProps) {
             count: collectStats,
             isActive: hasCollected,
           }}
-          icon={<SparklesIcon className="w-4 h-4" />}
+          icon={<CiBag1 className="w-4 h-4" />}
           onClick={handleCollectClick}
         />
       </span>

@@ -1,7 +1,9 @@
 "use client";
 
 import type { Post } from "@cartel-sh/ui";
-import { CalendarIcon, CoinsIcon, SparklesIcon, UsersIcon } from "lucide-react";
+import { CalendarIcon, CoinsIcon, CopyIcon, HashIcon, SparklesIcon, TrendingUpIcon, UsersIcon } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 import { LoadingSpinner } from "../LoadingSpinner";
 import { Button } from "../ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog";
@@ -34,6 +36,7 @@ export function CollectModal({
   const endsAt = collectDetails.endsAt;
   const followersOnly = collectDetails.followersOnly;
   const totalCollected = (post as any).stats?.collects || 0;
+  const collectNftAddress = collectDetails.collectNftAddress;
   
   // Extract media from post metadata
   const getPostMedia = () => {
@@ -88,6 +91,25 @@ export function CollectModal({
   const isExpired = endsAt && new Date(endsAt) < new Date();
   const canCollect = !hasCollected && !isLimitReached && !isExpired;
 
+  // Calculate total revenue
+  const calculateRevenue = () => {
+    if (!price || !price.amount || totalCollected === 0) return null;
+    const revenue = (parseFloat(price.amount) * totalCollected).toFixed(2);
+    return `${revenue} ${price.currency || "GHO"}`;
+  };
+
+  // Copy NFT address to clipboard
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast.success("Address copied to clipboard");
+  };
+
+  // Format address for display
+  const formatAddress = (address: string) => {
+    if (!address) return "";
+    return `${address.slice(0, 6)}...${address.slice(-4)}`;
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
@@ -96,13 +118,13 @@ export function CollectModal({
             Collect Post
           </DialogTitle>
           <DialogDescription>
-            Collect this post as an NFT to support the creator
+            Add this post to your collection and support the creator
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-2xl overflow-hidden [&_>*]:rounded-2xl">
+            <div className="w-10 h-10 rounded-full overflow-hidden">
               <UserAvatar user={post.author} link={false} card={false} />
             </div>
             <div className="flex-1">
@@ -129,10 +151,10 @@ export function CollectModal({
             <div className="space-y-2 text-sm">
               <div className="flex items-center justify-between">
                 <span className="flex items-center gap-1 text-muted-foreground">
-                  <CoinsIcon className="w-4 h-4" />
-                  Price
+                  <UsersIcon className="w-4 h-4" />
+                  Collectors
                 </span>
-                <span className="font-medium">{formatPrice(price)}</span>
+                <span className="font-medium">{totalCollected}</span>
               </div>
 
               {collectLimit && (
@@ -142,8 +164,34 @@ export function CollectModal({
                     Edition
                   </span>
                   <span className="font-medium">
-                    {totalCollected} / {collectLimit} collected
+                    {totalCollected} / {collectLimit}
                   </span>
+                </div>
+              )}
+
+              {calculateRevenue() && (
+                <div className="flex items-center justify-between">
+                  <span className="flex items-center gap-1 text-muted-foreground">
+                    <TrendingUpIcon className="w-4 h-4" />
+                    Revenue
+                  </span>
+                  <span className="font-medium">{calculateRevenue()}</span>
+                </div>
+              )}
+
+              {collectNftAddress && (
+                <div className="flex items-center justify-between">
+                  <span className="flex items-center gap-1 text-muted-foreground">
+                    <HashIcon className="w-4 h-4" />
+                    Token Address
+                  </span>
+                  <button
+                    onClick={() => copyToClipboard(collectNftAddress)}
+                    className="flex items-center gap-1 font-mono text-xs hover:text-primary transition-colors"
+                  >
+                    <span>{formatAddress(collectNftAddress)}</span>
+                    <CopyIcon className="w-3 h-3" />
+                  </button>
                 </div>
               )}
 
@@ -168,19 +216,11 @@ export function CollectModal({
             {price && price.amount && (
               <div className="pt-2 border-t">
                 <p className="text-xs text-muted-foreground">
-                  A 1.5% protocol fee will be applied to the collection price
+                  A 1.5% protocol fee will be applied to the collection
                 </p>
               </div>
             )}
           </div>
-
-          {hasCollected && (
-            <div className="rounded-lg bg-green-500/10 border border-green-500/20 p-3">
-              <p className="text-sm text-green-600 dark:text-green-400">
-                ✓ You've already collected this post
-              </p>
-            </div>
-          )}
 
           {isLimitReached && !hasCollected && (
             <div className="rounded-lg bg-yellow-500/10 border border-yellow-500/20 p-3">

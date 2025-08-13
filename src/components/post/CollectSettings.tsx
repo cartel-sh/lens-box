@@ -1,8 +1,10 @@
 "use client";
 
-import { CalendarIcon, CoinsIcon, InfinityIcon, UsersIcon } from "lucide-react";
+import { format } from "date-fns";
+import { CalendarIcon, ChevronDownIcon } from "lucide-react";
 import { useState } from "react";
 import { Button } from "../ui/button";
+import { Calendar } from "../ui/calendar";
 import { Card } from "../ui/card";
 import { Checkbox } from "../ui/checkbox";
 import { Input } from "../ui/input";
@@ -30,6 +32,10 @@ interface CollectSettingsProps {
 export function CollectSettings({ config, onChange }: CollectSettingsProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [localPrice, setLocalPrice] = useState(config.price?.amount || "");
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(
+    config.endsAt ? new Date(config.endsAt) : undefined
+  );
 
   const handleToggle = (enabled: boolean) => {
     onChange({ ...config, enabled });
@@ -71,11 +77,13 @@ export function CollectSettings({ config, onChange }: CollectSettingsProps) {
     }
   };
 
-  const handleEndDateChange = (value: string) => {
+  const handleDateSelect = (date: Date | undefined) => {
+    setSelectedDate(date);
     onChange({
       ...config,
-      endsAt: value || undefined,
+      endsAt: date ? date.toISOString() : undefined,
     });
+    setDatePickerOpen(false);
   };
 
   const handleFollowersOnlyChange = (checked: boolean) => {
@@ -131,8 +139,7 @@ export function CollectSettings({ config, onChange }: CollectSettingsProps) {
 
               <div className="space-y-3">
                 <div className="space-y-2">
-                  <Label htmlFor="collect-limit" className="text-xs flex items-center gap-1">
-                    <InfinityIcon className="w-3 h-3" />
+                  <Label htmlFor="collect-limit" className="text-xs">
                     Collect Limit
                   </Label>
                   <Input
@@ -151,8 +158,7 @@ export function CollectSettings({ config, onChange }: CollectSettingsProps) {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="collect-price" className="text-xs flex items-center gap-1">
-                    <CoinsIcon className="w-3 h-3" />
+                  <Label htmlFor="collect-price" className="text-xs">
                     Price
                   </Label>
                   <div className="flex gap-2">
@@ -192,19 +198,30 @@ export function CollectSettings({ config, onChange }: CollectSettingsProps) {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="collect-end" className="text-xs flex items-center gap-1">
-                    <CalendarIcon className="w-3 h-3" />
+                  <Label htmlFor="collect-end" className="text-xs">
                     End Date
                   </Label>
-                  <Input
-                    id="collect-end"
-                    type="datetime-local"
-                    value={config.endsAt || ""}
-                    onChange={(e) => handleEndDateChange(e.target.value)}
-                    onKeyDown={(e) => e.stopPropagation()}
-                    min={new Date().toISOString().slice(0, 16)}
-                    className="h-8 text-sm"
-                  />
+                  <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        id="collect-end"
+                        className="w-full h-8 justify-between font-normal text-sm"
+                      >
+                        {selectedDate ? format(selectedDate, "PPP") : "Select date"}
+                        <ChevronDownIcon className="h-4 w-4" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={selectedDate}
+                        onSelect={handleDateSelect}
+                        disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
                   <p className="text-xs text-muted-foreground">
                     Optional deadline for collecting
                   </p>
@@ -218,9 +235,8 @@ export function CollectSettings({ config, onChange }: CollectSettingsProps) {
                   />
                   <Label
                     htmlFor="followers-only"
-                    className="text-xs flex items-center gap-1 cursor-pointer"
+                    className="text-xs cursor-pointer"
                   >
-                    <UsersIcon className="w-3 h-3" />
                     Followers only
                   </Label>
                 </div>
