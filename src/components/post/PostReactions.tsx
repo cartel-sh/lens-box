@@ -9,6 +9,7 @@ import { useExplosion } from "../ExplosionPortal";
 import { ReactionButton } from "../ReactionButton";
 import { usePostStateContext } from "./PostStateContext";
 import RepostDropdown from "./RepostDropdown";
+import { CollectButton } from "./CollectButton";
 
 export function ReactionsList({
   post: postProp,
@@ -67,6 +68,7 @@ export function ReactionsList({
           onClick={handleLikeClick}
         />
       </span>
+      <CollectButton post={post} variant={isComment ? "comment" : "post"} />
     </div>
   );
 }

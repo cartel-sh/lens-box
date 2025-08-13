@@ -4,11 +4,12 @@ import { Button } from "./ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
 
 type ReactionButtonProps = {
-  reactionType: PostReactionType | "Like";
+  reactionType: PostReactionType | "Like" | "Collect";
   reaction: { count: number; isActive: boolean };
   onClick: () => void;
   disabled?: boolean;
   variant?: "post" | "comment";
+  icon?: React.ReactNode;
 };
 
 export const ReactionButton: React.FC<ReactionButtonProps> = ({
@@ -17,6 +18,7 @@ export const ReactionButton: React.FC<ReactionButtonProps> = ({
   onClick,
   disabled = false,
   variant = "post",
+  icon,
 }) => {
   const formattedAmount = Intl.NumberFormat("en-US", {
     notation: "compact",
@@ -39,7 +41,7 @@ export const ReactionButton: React.FC<ReactionButtonProps> = ({
         <Tooltip>
           <TooltipTrigger asChild>
             <span className="transition-transform">
-              <ReactionIcon variant={variant} pressed={reaction.isActive} reaction={reactionType} />
+              {icon || <ReactionIcon variant={variant} pressed={reaction.isActive} reaction={reactionType} />}
             </span>
           </TooltipTrigger>
           <TooltipContent>

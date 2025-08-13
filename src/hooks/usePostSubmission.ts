@@ -2,6 +2,7 @@ import type { Post, User } from "@cartel-sh/ui";
 import { editPost, fetchPost, post } from "@lens-protocol/client/actions";
 import { handleOperationWith } from "@lens-protocol/client/viem";
 import { image, textOnly, video } from "@lens-protocol/metadata";
+import type { CollectConfig } from "~/components/post/CollectSettings";
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
@@ -31,6 +32,7 @@ interface SubmissionOptions {
   currentUser?: User;
   community?: string;
   feed?: string;
+  collectConfig?: CollectConfig;
   onSuccess?: (post?: Post | null) => void;
   onClose?: () => void;
   clearForm: () => void;
@@ -63,6 +65,7 @@ export function usePostSubmission() {
       currentUser,
       community = "",
       feed,
+      collectConfig,
       onSuccess,
       onClose,
       clearForm,
@@ -198,6 +201,41 @@ export function usePostSubmission() {
           }
         } else {
           // Handle creating new post
+          const actions = [];
+          
+          // Add collect action if enabled
+          if (collectConfig?.enabled && !replyingTo && !quotedPost) {
+            const collectAction: any = {
+              simpleCollect: {},
+            };
+            
+            if (collectConfig.collectLimit) {
+              collectAction.simpleCollect.collectLimit = collectConfig.collectLimit;
+            }
+            
+            if (collectConfig.endsAt) {
+              collectAction.simpleCollect.endsAt = new Date(collectConfig.endsAt).toISOString();
+            }
+            
+            if (collectConfig.followersOnly) {
+              collectAction.simpleCollect.followerOnly = true;
+            }
+            
+            if (collectConfig.price) {
+              // For now, we'll use native token (MATIC) pricing
+              // In production, you'd need to handle different currencies properly
+              collectAction.simpleCollect.amount = {
+                value: collectConfig.price.amount,
+                asset: {
+                  currency: collectConfig.price.currency === "MATIC" ? "MATIC" : "USDC",
+                  decimals: collectConfig.price.currency === "MATIC" ? 18 : 6,
+                },
+              };
+            }
+            
+            actions.push(collectAction);
+          }
+          
           const postData = replyingTo
             ? {
                 feed,
@@ -205,6 +243,7 @@ export function usePostSubmission() {
                 commentOn: {
                   post: replyingTo.id,
                 },
+                actions: actions.length > 0 ? actions : undefined,
               }
             : quotedPost
               ? {
@@ -213,10 +252,12 @@ export function usePostSubmission() {
                   quoteOf: {
                     post: quotedPost.id,
                   },
+                  actions: actions.length > 0 ? actions : undefined,
                 }
               : {
                   feed,
                   contentUri,
+                  actions: actions.length > 0 ? actions : undefined,
                 };
 
           if (quotedPost) {

@@ -37,6 +37,7 @@ import { UserAvatar } from "../user/UserAvatar";
 import { ComposerProvider, useComposer } from "./ComposerContext";
 import { PostComposerActions } from "./PostComposerActions";
 import { QuotedPostPreview } from "./QuotedPostPreview";
+import { CollectSettings, type CollectConfig } from "./CollectSettings";
 
 const MAX_FILE_SIZE = 8 * 1024 * 1024; // 8MB
 
@@ -178,6 +179,7 @@ function ComposerContent() {
 
   const currentUser = user || contextUser;
   const [mediaFiles, setMediaFiles] = useState<MediaItem[]>([]);
+  const [collectConfig, setCollectConfig] = useState<CollectConfig>({ enabled: false });
 
   const pathSegments = pathname.split("/");
   const communityFromPath = pathSegments[1] === "c" ? pathSegments[2] : "";
@@ -350,6 +352,7 @@ function ComposerContent() {
       currentUser,
       community: finalCommunity,
       feed,
+      collectConfig,
       onSuccess: (post) => {
         onSuccess?.(post);
         if (replyingTo || quotedPost) {
@@ -360,6 +363,7 @@ function ComposerContent() {
       clearForm: () => {
         form.setValue("content", "");
         setMediaFiles([]);
+        setCollectConfig({ enabled: false });
       },
     });
   }
@@ -450,7 +454,12 @@ function ComposerContent() {
                 )}
               />
 
-              <PostComposerActions onImageClick={open} onEmojiClick={handleEmojiClick} />
+              <div className="flex items-center justify-between">
+                <PostComposerActions onImageClick={open} onEmojiClick={handleEmojiClick} />
+                {!editingPost && !replyingTo && (
+                  <CollectSettings config={collectConfig} onChange={setCollectConfig} />
+                )}
+              </div>
               <MediaPreview files={mediaFiles} onRemove={removeMedia} onReorder={reorderMedia} />
               {quotedPost && <QuotedPostPreview quotedPost={quotedPost} />}
 

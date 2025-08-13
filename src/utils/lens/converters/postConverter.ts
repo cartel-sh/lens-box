@@ -42,13 +42,53 @@ export function lensItemToPost(item: AnyPost | TimelineItem): Post | null {
       isEdited: item.isEdited || false,
       platform: "lens",
       __typename: "Post",
-    };
+      ...{ 
+        actions: getPostActions(item),
+        stats: {
+          collects: item.stats?.collects || 0,
+          comments: item.stats?.comments || 0,
+          reposts: item.stats?.reposts || 0,
+          quotes: item.stats?.quotes || 0,
+          reactions: item.stats?.upvotes || 0,
+          bookmarks: item.stats?.bookmarks || 0,
+        },
+      },
+    } as any;
   } catch (error) {
     console.error(error);
     return null;
   }
 
   return post;
+}
+
+function getPostActions(post: LensPost): any {
+  const actions: any = {
+    canCollect: post.operations?.canSimpleCollect?.__typename === "SimpleCollectValidationPassed" || false,
+    hasCollected: post.operations?.hasSimpleCollected || false,
+    canComment: post.operations?.canComment?.__typename === "PostOperationValidationPassed" || false,
+    canRepost: post.operations?.canRepost?.__typename === "PostOperationValidationPassed" || false,
+    canQuote: post.operations?.canQuote?.__typename === "PostOperationValidationPassed" || false,
+    canEdit: post.operations?.canEdit?.__typename === "PostOperationValidationPassed" || false,
+  };
+
+  // Extract collect details if available
+  if (post.actions && Array.isArray(post.actions)) {
+    const collectAction = post.actions.find((action: any) => action.__typename === "SimpleCollectAction");
+    if (collectAction) {
+      actions.collectDetails = {
+        collectLimit: (collectAction as any).collectLimit,
+        endsAt: (collectAction as any).endsAt,
+        followersOnly: (collectAction as any).followerOnly,
+        price: (collectAction as any).amount ? {
+          amount: (collectAction as any).amount.value,
+          currency: (collectAction as any).amount.asset?.currency,
+        } : null,
+      };
+    }
+  }
+
+  return actions;
 }
 
 function getReactions(post: LensPost): Partial<PostReactions> {
