@@ -71,12 +71,35 @@ function getPostActions(post: LensPost): any {
     canQuote: post.operations?.canQuote?.__typename === "PostOperationValidationPassed" || false,
     canEdit: post.operations?.canEdit?.__typename === "PostOperationValidationPassed" || false,
   };
+  
+  // Debug logging to find where collect module data is
+  console.log("[COLLECT_DEBUG] === Checking all post fields for collect data ===");
+  console.log("[COLLECT_DEBUG] post.openActionModules:", (post as any).openActionModules);
+  console.log("[COLLECT_DEBUG] post.collectModule:", (post as any).collectModule);
+  console.log("[COLLECT_DEBUG] post.collectNftAddress:", (post as any).collectNftAddress);
+  console.log("[COLLECT_DEBUG] post.operations:", post.operations);
 
   // Extract collect details if available
   if (post.actions && Array.isArray(post.actions)) {
+    console.log("[COLLECT_DEBUG] Post actions array:", JSON.stringify(post.actions, null, 2));
+    
     const collectAction = post.actions.find((action: any) => action.__typename === "SimpleCollectAction");
     if (collectAction) {
       const collect = collectAction as any;
+      
+      // Log the entire collect action to see its structure
+      console.log("[COLLECT_DEBUG] Found SimpleCollectAction:", collect);
+      console.log("[COLLECT_DEBUG] SimpleCollectAction stringified:", JSON.stringify(collect, null, 2));
+      
+      // Log all fields of the collect action
+      console.log("[COLLECT_DEBUG] Collect action fields:", Object.keys(collect));
+      
+      // Check for various possible price field locations
+      console.log("[COLLECT_DEBUG] collect.payToCollect:", collect.payToCollect);
+      console.log("[COLLECT_DEBUG] collect.amount:", collect.amount);
+      console.log("[COLLECT_DEBUG] collect.fee:", collect.fee);
+      console.log("[COLLECT_DEBUG] collect.baseCollectFee:", collect.baseCollectFee);
+      console.log("[COLLECT_DEBUG] collect.simpleCollectLimit:", collect.simpleCollectLimit);
       
       // Extract price from payToCollect field
       let price = null;
@@ -96,14 +119,34 @@ function getPostActions(post: LensPost): any {
         }
       }
       
+      // Check for price in the format fountain-app uses: payToCollect.amount
+      if (!price && collect.payToCollect?.amount) {
+        console.log("[COLLECT_DEBUG] Found payToCollect.amount:", collect.payToCollect.amount);
+        const amount = collect.payToCollect.amount;
+        price = {
+          amount: amount.value,
+          currency: amount.asset?.symbol || amount.asset?.currency || "GHO",
+        };
+      }
+      
+      console.log("[COLLECT_DEBUG] Extracted price:", price);
+      console.log("[COLLECT_DEBUG] Full payToCollect structure:", JSON.stringify(collect.payToCollect, null, 2));
+      
       actions.collectDetails = {
         collectLimit: collect.collectLimit,
         endsAt: collect.endsAt,
         followersOnly: collect.followerOnly,
         price: price,
         recipients: collect.payToCollect?.recipients,
+        collectNftAddress: collect.collectNftAddress,
       };
+      
+      console.log("[COLLECT_DEBUG] Final collectDetails:", actions.collectDetails);
+    } else {
+      console.log("[COLLECT_DEBUG] No SimpleCollectAction found in actions");
     }
+  } else {
+    console.log("[COLLECT_DEBUG] No actions array on post or not an array");
   }
 
   return actions;

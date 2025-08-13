@@ -1,4 +1,4 @@
-import { fetchPost } from "@lens-protocol/client/actions";
+import { executePostAction, fetchPost } from "@lens-protocol/client/actions";
 import { handleOperationWith } from "@lens-protocol/client/viem";
 import { type NextRequest, NextResponse } from "next/server";
 import { getServerAuth } from "~/utils/getServerAuth";
@@ -59,37 +59,54 @@ export async function POST(_req: NextRequest, { params }: { params: { id: string
       return NextResponse.json({ error: "Collect period has ended", result: false }, { status: 400 });
     }
 
-    // TODO: When the Lens SDK supports executePostAction/actOn, replace this with actual implementation
-    // For now, we'll return a success response for testing the UI
-    
-    // In production, this would be:
-    // const result = await executePostAction(sessionClient, {
-    //   action: { simpleCollect: true },
-    //   post: id,
-    // });
-    // 
-    // if (result.isErr()) {
-    //   return NextResponse.json({ error: result.error.message }, { status: 500 });
-    // }
-    // 
-    // const txResult = await handleOperationWith(walletClient)(result.value);
-    // await sessionClient.waitForTransaction(txResult.value);
-
-    return NextResponse.json(
-      {
-        result: false,
-        error: "Collect functionality is pending Lens SDK executePostAction support",
-        message: "The collect feature is not yet functional. Waiting for Lens Protocol SDK update.",
-        collectDetails: {
-          price: collectDetails?.payToCollect?.native || collectDetails?.payToCollect?.erc20,
-          collectLimit: collectDetails?.collectLimit,
-          endsAt: collectDetails?.endsAt,
-          followersOnly: collectDetails?.followerOnly,
-          totalCollected: publication.stats?.collects || 0,
+    // Execute the collect action
+    try {
+      const result = await executePostAction(sessionClient, {
+        post: id,
+        action: {
+          simpleCollect: {
+            selected: true,
+          },
         },
-      },
-      { status: 501 }, // 501 Not Implemented
-    );
+      });
+
+      if (result.isErr()) {
+        console.error("Failed to execute collect action:", result.error);
+        return NextResponse.json(
+          { 
+            error: result.error.message || "Failed to execute collect action",
+            result: false 
+          }, 
+          { status: 500 }
+        );
+      }
+
+      // Return the transaction result for the client to handle with wallet
+      return NextResponse.json(
+        {
+          result: result.value,
+          message: "Collect action initiated successfully",
+          needsWalletSignature: true,
+          collectDetails: {
+            price: collectDetails?.payToCollect?.amount,
+            collectLimit: collectDetails?.collectLimit,
+            endsAt: collectDetails?.endsAt,
+            followersOnly: collectDetails?.followerOnly,
+            totalCollected: publication.stats?.collects || 0,
+          },
+        },
+        { status: 200 }
+      );
+    } catch (error: any) {
+      console.error("Error executing collect action:", error);
+      return NextResponse.json(
+        { 
+          error: error.message || "Failed to execute collect action",
+          result: false 
+        }, 
+        { status: 500 }
+      );
+    }
   } catch (error) {
     console.error("Failed to collect post: ", error.message);
     return NextResponse.json({ error: `${error.message}`, result: false }, { status: 500 });
