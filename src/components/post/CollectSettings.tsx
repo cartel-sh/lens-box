@@ -1,8 +1,9 @@
 "use client";
 
 import { format } from "date-fns";
-import { CalendarIcon, ChevronDownIcon } from "lucide-react";
+import { ChevronDownIcon, SparklesIcon } from "lucide-react";
 import { useState } from "react";
+import { CiBag1 } from "react-icons/ci";
 import { Button } from "../ui/button";
 import { Calendar } from "../ui/calendar";
 import { Card } from "../ui/card";
@@ -11,7 +12,6 @@ import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
-import { Switch } from "../ui/switch";
 
 export interface CollectConfig {
   enabled: boolean;
@@ -94,33 +94,35 @@ export function CollectSettings({ config, onChange }: CollectSettingsProps) {
   };
 
   return (
-    <div className="flex items-center gap-2">
-      <div className="flex items-center gap-2">
-        <Switch
-          id="collect-toggle"
-          checked={config.enabled}
-          onCheckedChange={handleToggle}
-          className="data-[state=checked]:bg-green-500"
-        />
-        <Label htmlFor="collect-toggle" className="text-sm cursor-pointer">
-          Collectible
-        </Label>
-      </div>
-
-      {config.enabled && (
-        <Popover open={isOpen} onOpenChange={(open) => {
-          // Only allow closing via the Done button or escape key
-          if (!open && isOpen) {
-            // Don't close if we're just interacting with inputs
-            return;
-          }
-          setIsOpen(open);
-        }}>
-          <PopoverTrigger asChild>
-            <Button variant="ghost" size="sm" className="h-8 px-2">
-              Settings
-            </Button>
-          </PopoverTrigger>
+    <>
+      <Popover open={isOpen} onOpenChange={(open) => {
+        // Only allow closing via the Done button or escape key
+        if (!open && isOpen) {
+          // Don't close if we're just interacting with inputs
+          return;
+        }
+        setIsOpen(open);
+      }}>
+        <PopoverTrigger asChild>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className={`rounded-full w-8 h-8 hover:bg-transparent button-hover-bg button-hover-bg-equal ${
+              config.enabled ? "text-primary" : ""
+            }`}
+            onClick={() => {
+              if (!config.enabled) {
+                handleToggle(true);
+                setIsOpen(true);
+              } else {
+                setIsOpen(true);
+              }
+            }}
+          >
+            <CiBag1 className="h-5 w-5" />
+          </Button>
+        </PopoverTrigger>
           <PopoverContent 
             className="w-80" 
             align="end" 
@@ -131,7 +133,22 @@ export function CollectSettings({ config, onChange }: CollectSettingsProps) {
           >
             <div className="space-y-4">
               <div className="space-y-2">
-                <h4 className="font-medium text-sm">Collect Settings</h4>
+                <div className="flex items-center justify-between">
+                  <h4 className="font-medium text-sm">Collect Settings</h4>
+                  {config.enabled && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 px-2 text-xs"
+                      onClick={() => {
+                        handleToggle(false);
+                        setIsOpen(false);
+                      }}
+                    >
+                      Disable
+                    </Button>
+                  )}
+                </div>
                 <p className="text-xs text-muted-foreground">
                   Configure how others can collect your post as an NFT
                 </p>
@@ -259,8 +276,7 @@ export function CollectSettings({ config, onChange }: CollectSettingsProps) {
               </div>
             </div>
           </PopoverContent>
-        </Popover>
-      )}
-    </div>
+      </Popover>
+    </>
   );
 }

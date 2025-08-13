@@ -455,10 +455,12 @@ function ComposerContent() {
               />
 
               <div className="flex items-center justify-between">
-                <PostComposerActions onImageClick={open} onEmojiClick={handleEmojiClick} />
-                {!editingPost && !replyingTo && (
-                  <CollectSettings config={collectConfig} onChange={setCollectConfig} />
-                )}
+                <div className="flex items-center gap-2">
+                  <PostComposerActions onImageClick={open} onEmojiClick={handleEmojiClick} />
+                  {!editingPost && !replyingTo && (
+                    <CollectSettings config={collectConfig} onChange={setCollectConfig} />
+                  )}
+                </div>
               </div>
               <MediaPreview files={mediaFiles} onRemove={removeMedia} onReorder={reorderMedia} />
               {quotedPost && <QuotedPostPreview quotedPost={quotedPost} />}

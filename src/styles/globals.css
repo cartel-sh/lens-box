@@ -252,6 +252,27 @@
   .dark .button-hover-bg::before {
     background: hsl(var(--secondary) / 0.4);
   }
+  
+  /* Active collectible button background */
+  .button-hover-bg.text-primary::before {
+    background: hsl(var(--primary) / 0.1);
+    opacity: 1;
+    transform: scale(1);
+  }
+  
+  .button-hover-bg.text-primary:hover::before {
+    background: hsl(var(--primary) / 0.15);
+    opacity: 1;
+    transform: scale(0.98);
+  }
+  
+  .dark .button-hover-bg.text-primary::before {
+    background: hsl(var(--primary) / 0.15);
+  }
+  
+  .dark .button-hover-bg.text-primary:hover::before {
+    background: hsl(var(--primary) / 0.2);
+  }
 
   /* Wide hover bg for buttons with counters */
   .button-hover-bg-wide::before {
