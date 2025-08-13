@@ -34,6 +34,36 @@ export function CollectModal({
   const endsAt = collectDetails.endsAt;
   const followersOnly = collectDetails.followersOnly;
   const totalCollected = (post as any).stats?.collects || 0;
+  
+  // Extract media from post metadata
+  const getPostMedia = () => {
+    const metadata = post.metadata as any;
+    if (!metadata) return null;
+    
+    // Check for image metadata
+    if (metadata.__typename === "ImageMetadata" && metadata.image?.item) {
+      return metadata.image.item;
+    }
+    
+    // Check for video metadata with cover
+    if (metadata.__typename === "VideoMetadata" && metadata.video?.cover) {
+      return metadata.video.cover;
+    }
+    
+    // Check for attachments array (first image attachment)
+    if (metadata.attachments && Array.isArray(metadata.attachments)) {
+      const imageAttachment = metadata.attachments.find((att: any) => 
+        att.item && att.type && att.type.startsWith("image/")
+      );
+      if (imageAttachment) {
+        return imageAttachment.item;
+      }
+    }
+    
+    return null;
+  };
+  
+  const postImage = getPostMedia();
 
   const formatPrice = (price: any) => {
     if (!price || !price.amount) return "Free";
@@ -62,8 +92,7 @@ export function CollectModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <SparklesIcon className="w-5 h-5" />
+          <DialogTitle>
             Collect Post
           </DialogTitle>
           <DialogDescription>
@@ -77,12 +106,22 @@ export function CollectModal({
               <UserAvatar user={post.author} link={false} card={false} />
             </div>
             <div className="flex-1">
-              <p className="font-medium">@{post.author.username}</p>
+              <p className="font-bold">{post.author.username}</p>
               <p className="text-sm text-muted-foreground line-clamp-2">
                 {post.metadata?.content || ""}
               </p>
             </div>
           </div>
+
+          {postImage && (
+            <div className="relative w-full rounded-lg overflow-hidden bg-muted">
+              <img
+                src={postImage}
+                alt="Post media"
+                className="w-full h-auto max-h-[200px] object-cover"
+              />
+            </div>
+          )}
 
           <div className="space-y-3 rounded-lg border p-4">
             <h4 className="font-medium text-sm">Collection Details</h4>
