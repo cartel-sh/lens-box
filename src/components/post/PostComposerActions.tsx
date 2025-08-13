@@ -13,7 +13,6 @@ export function PostComposerActions({ onImageClick, onEmojiClick }: PostComposer
   const [isEmojiPickerOpen, setEmojiPickerOpen] = useState(false);
 
   const handleEmojiClick = (emoji: any) => {
-    console.log('Emoji clicked:', emoji);
     onEmojiClick(emoji);
     // Keep the picker open so users can add multiple emojis
   };
