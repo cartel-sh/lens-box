@@ -3,7 +3,7 @@
 import type { Post } from "@cartel-sh/ui";
 import { chains } from "@lens-chain/sdk/viem";
 import { handleOperationWith } from "@lens-protocol/client/viem";
-import { ExternalLinkIcon, Handbag } from "lucide-react";
+import { ExternalLinkIcon, ShoppingBag } from "lucide-react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { useAccount, useSwitchChain, useWalletClient } from "wagmi";
@@ -39,24 +39,24 @@ export function CollectButton({ post, variant = "post" }: CollectButtonProps) {
 
   const handleCollectClick = async () => {
     if (!requireAuth()) return;
-    
+
     // Show modal for collect confirmation
     setIsModalOpen(true);
   };
 
   const handleCollect = async () => {
     setIsCollecting(true);
-    
+
     try {
       // Check if we're on the correct chain (Lens Mainnet: 232)
       const LENS_CHAIN_ID = chains.mainnet.id; // 232
-      
+
       // Get current chain from wallet client if chain from useAccount is undefined
       let currentChainId = chain?.id;
       if (!currentChainId && walletClient) {
         currentChainId = await walletClient.getChainId();
       }
-      
+
       // Check if we need to switch chains
       if (isConnected && currentChainId && currentChainId !== LENS_CHAIN_ID) {
         try {
@@ -84,7 +84,7 @@ export function CollectButton({ post, variant = "post" }: CollectButtonProps) {
           return;
         }
       }
-      
+
       // Use the numeric hex ID, not the slug
       const postIdForCollect = (post as any).numericId || post.id;
       const response = await fetch(`/api/posts/${postIdForCollect}/collect`, {
@@ -116,20 +116,20 @@ export function CollectButton({ post, variant = "post" }: CollectButtonProps) {
         try {
           // Execute the transaction with wallet
           const txResult = await handleOperationWith(walletClient as any)(data.result);
-          
+
           if (txResult.isErr()) {
             throw new Error(txResult.error.message || "Transaction failed");
           }
-          
+
           // Success!
           if (collectButtonRef.current && !hasCollected) {
             triggerExplosion("collect", collectButtonRef.current);
           }
-          
+
           // Show success toast with explorer link
           const txHash = txResult.value;
           const explorerUrl = `https://explorer.lens.xyz/tx/${txHash}`;
-          
+
           toast.success(
             <div className="flex items-center gap-2">
               <span>Post collected successfully!</span>
@@ -145,18 +145,18 @@ export function CollectButton({ post, variant = "post" }: CollectButtonProps) {
               </a>
             </div>
           );
-          
+
           setIsModalOpen(false);
         } catch (walletError: any) {
           console.error("Wallet transaction failed:", walletError);
-          
+
           // Check if it's a chain mismatch error
           if (walletError.message?.includes("chain") || walletError.message?.includes("Expected Chain ID")) {
             toast.error("Wrong network. Please switch to Lens Network and try again.");
             setIsCollecting(false);
             return;
           }
-          
+
           throw new Error(walletError.message || "Wallet transaction failed");
         }
       } else if (!data.needsWalletSignature) {
@@ -186,7 +186,7 @@ export function CollectButton({ post, variant = "post" }: CollectButtonProps) {
             isActive: hasCollected,
           }}
           icon={
-            <Handbag 
+            <ShoppingBag
               size={variant === "post" ? 18 : 16}
               strokeWidth={1.2}
               stroke={hasCollected ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))"}
@@ -197,7 +197,7 @@ export function CollectButton({ post, variant = "post" }: CollectButtonProps) {
           onClick={handleCollectClick}
         />
       </span>
-      
+
       {isModalOpen && (
         <CollectModal
           post={post}

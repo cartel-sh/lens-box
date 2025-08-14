@@ -1,16 +1,16 @@
 "use client";
 
 import { format } from "date-fns";
-import { ChevronDownIcon, Handbag, SparklesIcon } from "lucide-react";
+import { ChevronDownIcon, ShoppingBag } from "lucide-react";
 import { useState } from "react";
 import { Button } from "../ui/button";
 import { Calendar } from "../ui/calendar";
-import { Card } from "../ui/card";
 import { Checkbox } from "../ui/checkbox";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog";
 
 export interface CollectConfig {
   enabled: boolean;
@@ -94,188 +94,167 @@ export function CollectSettings({ config, onChange }: CollectSettingsProps) {
 
   return (
     <>
-      <Popover open={isOpen} onOpenChange={(open) => {
-        // Only allow closing via the Done button or escape key
-        if (!open && isOpen) {
-          // Don't close if we're just interacting with inputs
-          return;
-        }
-        setIsOpen(open);
-      }}>
-        <PopoverTrigger asChild>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className={`rounded-full w-8 h-8 hover:bg-transparent button-hover-bg button-hover-bg-equal ${
-              config.enabled ? "text-primary" : ""
-            }`}
-            onClick={() => {
-              if (!config.enabled) {
-                handleToggle(true);
-                setIsOpen(true);
-              } else {
-                setIsOpen(true);
-              }
-            }}
-          >
-            <Handbag className={`h-5 w-5 ${config.enabled ? "text-primary" : "text-muted-foreground"}`} strokeWidth={1.2} />
-          </Button>
-        </PopoverTrigger>
-          <PopoverContent 
-            className="w-80" 
-            align="end" 
-            onOpenAutoFocus={(e) => e.preventDefault()}
-            onInteractOutside={(e) => e.preventDefault()}
-            onPointerDownOutside={(e) => e.preventDefault()}
-            onEscapeKeyDown={() => setIsOpen(false)}
-          >
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <h4 className="font-medium text-sm">Collect Settings</h4>
-                  {config.enabled && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-6 px-2 text-xs"
-                      onClick={() => {
-                        handleToggle(false);
-                        setIsOpen(false);
-                      }}
-                    >
-                      Disable
-                    </Button>
-                  )}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Configure how others can collect your post as an NFT
-                </p>
-              </div>
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon"
+        className={`rounded-full w-8 h-8 hover:bg-transparent button-hover-bg button-hover-bg-equal ${config.enabled ? "text-primary" : ""
+          }`}
+        onClick={() => {
+          if (!config.enabled) {
+            handleToggle(true);
+          }
+          setIsOpen(true);
+        }}
+      >
+        <ShoppingBag strokeWidth={2.0} className={`h-5 w-5 ${config.enabled ? "text-primary" : "text-muted-foreground"}`} />
+      </Button>
 
-              <div className="space-y-3">
-                <div className="space-y-2">
-                  <Label htmlFor="collect-limit" className="text-xs">
-                    Collect Limit
-                  </Label>
-                  <Input
-                    id="collect-limit"
-                    type="number"
-                    placeholder="Unlimited"
-                    value={config.collectLimit || ""}
-                    onChange={(e) => handleLimitChange(e.target.value)}
-                    onKeyDown={(e) => e.stopPropagation()}
-                    min="1"
-                    className="h-8 text-sm"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Leave empty for unlimited collects
-                  </p>
-                </div>
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Collect Settings</DialogTitle>
+            <DialogDescription>
+              Configure how others can collect your post as an NFT
+            </DialogDescription>
+          </DialogHeader>
 
-                <div className="space-y-2">
-                  <Label htmlFor="collect-price" className="text-xs">
-                    Price
-                  </Label>
-                  <div className="flex gap-2">
-                    <input
-                      id="collect-price"
-                      type="text"
-                      inputMode="decimal"
-                      placeholder="Free"
-                      value={localPrice}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        // Allow only numbers and decimal point
-                        if (value === "" || /^\d*\.?\d*$/.test(value)) {
-                          handlePriceChange(value);
-                        }
-                      }}
-                      className="flex h-8 w-full rounded-md border border-input bg-background px-3 py-1 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 flex-1"
-                    />
-                    {config.price && (
-                      <Select
-                        value={config.price.currency}
-                        onValueChange={handleCurrencyChange}
-                      >
-                        <SelectTrigger className="h-8 w-20 text-sm">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="GHO">GHO</SelectItem>
-                          <SelectItem value="WGHO">WGHO</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    )}
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Set a price to collect (1.5% protocol fee applies)
-                  </p>
-                </div>
+          <div className="space-y-3">
+            <div className="space-y-2">
+              <Label htmlFor="collect-limit" className="text-xs">
+                Collect Limit
+              </Label>
+              <Input
+                id="collect-limit"
+                type="number"
+                placeholder="Unlimited"
+                value={config.collectLimit || ""}
+                onChange={(e) => handleLimitChange(e.target.value)}
+                onKeyDown={(e) => e.stopPropagation()}
+                min="1"
+                className="h-8 text-sm"
+              />
+              <p className="text-xs text-muted-foreground">
+                Leave empty for unlimited collects
+              </p>
+            </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="collect-end" className="text-xs">
-                    End Date
-                  </Label>
-                  <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        id="collect-end"
-                        className="w-full h-8 justify-between font-normal text-sm"
-                      >
-                        {selectedDate ? format(selectedDate, "PPP") : "Select date"}
-                        <ChevronDownIcon className="h-4 w-4" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={selectedDate}
-                        onSelect={handleDateSelect}
-                        disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
-                  <p className="text-xs text-muted-foreground">
-                    Optional deadline for collecting
-                  </p>
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="followers-only"
-                    checked={config.followersOnly || false}
-                    onCheckedChange={handleFollowersOnlyChange}
-                  />
-                  <Label
-                    htmlFor="followers-only"
-                    className="text-xs cursor-pointer"
+            <div className="space-y-2">
+              <Label htmlFor="collect-price" className="text-xs">
+                Price
+              </Label>
+              <div className="flex gap-2">
+                <input
+                  id="collect-price"
+                  type="text"
+                  inputMode="decimal"
+                  placeholder="Free"
+                  value={localPrice}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (value === "" || /^\d*\.?\d*$/.test(value)) {
+                      handlePriceChange(value);
+                    }
+                  }}
+                  className="flex h-8 w-full rounded-md border border-input bg-background px-3 py-1 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 flex-1"
+                />
+                {config.price && (
+                  <Select
+                    value={config.price.currency}
+                    onValueChange={handleCurrencyChange}
                   >
-                    Followers only
-                  </Label>
-                </div>
+                    <SelectTrigger className="h-8 w-20 text-sm">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="GHO">GHO</SelectItem>
+                      <SelectItem value="WGHO">WGHO</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
               </div>
+              <p className="text-xs text-muted-foreground">
+                Set a price to collect (1.5% protocol fee applies)
+              </p>
+            </div>
 
-              <div className="pt-2 border-t">
+            <div className="space-y-2">
+              <Label htmlFor="collect-end" className="text-xs">
+                End Date
+              </Label>
+              <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    id="collect-end"
+                    className="w-full h-8 justify-between font-normal text-sm"
+                  >
+                    {selectedDate ? format(selectedDate, "PPP") : "Select date"}
+                    <ChevronDownIcon className="h-4 w-4" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={handleDateSelect}
+                    disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+              <p className="text-xs text-muted-foreground">
+                Optional deadline for collecting
+              </p>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="followers-only"
+                checked={config.followersOnly || false}
+                onCheckedChange={handleFollowersOnlyChange}
+              />
+              <Label
+                htmlFor="followers-only"
+                className="text-xs cursor-pointer"
+              >
+                Followers only
+              </Label>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <div className="w-full flex items-center gap-2">
+              {config.enabled && (
                 <Button
+                  variant="ghost"
                   size="sm"
-                  variant="outline"
-                  className="w-full h-8 text-xs"
-                  type="button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
+                  className="h-8 px-2 text-xs"
+                  onClick={() => {
+                    handleToggle(false);
                     setIsOpen(false);
                   }}
                 >
-                  Done
+                  Disable
                 </Button>
-              </div>
+              )}
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-8 text-xs ml-auto"
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setIsOpen(false);
+                }}
+              >
+                Done
+              </Button>
             </div>
-          </PopoverContent>
-      </Popover>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
