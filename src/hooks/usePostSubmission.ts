@@ -2,6 +2,7 @@ import type { Post, User } from "@cartel-sh/ui";
 import { editPost, fetchPost, post } from "@lens-protocol/client/actions";
 import { handleOperationWith } from "@lens-protocol/client/viem";
 import { image, textOnly, video } from "@lens-protocol/metadata";
+import type { CollectConfig } from "~/components/post/CollectSettings";
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
@@ -31,6 +32,7 @@ interface SubmissionOptions {
   currentUser?: User;
   community?: string;
   feed?: string;
+  collectConfig?: CollectConfig;
   onSuccess?: (post?: Post | null) => void;
   onClose?: () => void;
   clearForm: () => void;
@@ -63,6 +65,7 @@ export function usePostSubmission() {
       currentUser,
       community = "",
       feed,
+      collectConfig,
       onSuccess,
       onClose,
       clearForm,
@@ -178,6 +181,10 @@ export function usePostSubmission() {
           setPosting(false);
           return;
         }
+        
+        // Get the authenticated user's address for collect recipients
+        const authenticatedUser = client.getAuthenticatedUser();
+        const userAddress = authenticatedUser.isOk() ? authenticatedUser.value?.address : null;
 
         if (editingPost) {
           const result = await editPost(client, {
@@ -198,6 +205,58 @@ export function usePostSubmission() {
           }
         } else {
           // Handle creating new post
+          const actions = [];
+          
+          // Add collect action if enabled
+          if (collectConfig?.enabled && !replyingTo && !quotedPost) {
+            const collectAction: any = {
+              simpleCollect: {},
+            };
+            
+            if (collectConfig.collectLimit) {
+              collectAction.simpleCollect.collectLimit = collectConfig.collectLimit;
+            }
+            
+            if (collectConfig.endsAt) {
+              collectAction.simpleCollect.endsAt = new Date(collectConfig.endsAt).toISOString();
+            }
+            
+            if (collectConfig.followersOnly) {
+              collectAction.simpleCollect.followerOnly = true;
+            }
+            
+            if (collectConfig.price && collectConfig.price.amount) {
+              // Set up paid collect with GHO or WGHO
+              const payToCollect: any = {};
+              
+              // Add recipients if we have the user's address
+              // Recipients array must have at least one entry with 100% going to author
+              if (userAddress) {
+                payToCollect.recipients = [
+                  {
+                    address: userAddress,
+                    percent: 100, // 100% goes to the post author
+                  },
+                ];
+              }
+              
+              if (collectConfig.price.currency === "GHO") {
+                // Native GHO payment
+                payToCollect.native = collectConfig.price.amount; // BigDecimal as string
+              } else {
+                // WGHO (ERC-20) payment on Lens Mainnet
+                payToCollect.erc20 = {
+                  value: collectConfig.price.amount, // BigDecimal as string
+                  currency: "0x6bDc36E20D267Ff0dd6097799f82e78907105e2F", // WGHO on Lens Mainnet
+                };
+              }
+              
+              collectAction.simpleCollect.payToCollect = payToCollect;
+            }
+            
+            actions.push(collectAction);
+          }
+          
           const postData = replyingTo
             ? {
                 feed,
@@ -205,6 +264,7 @@ export function usePostSubmission() {
                 commentOn: {
                   post: replyingTo.id,
                 },
+                actions: actions.length > 0 ? actions : undefined,
               }
             : quotedPost
               ? {
@@ -213,10 +273,12 @@ export function usePostSubmission() {
                   quoteOf: {
                     post: quotedPost.id,
                   },
+                  actions: actions.length > 0 ? actions : undefined,
                 }
               : {
                   feed,
                   contentUri,
+                  actions: actions.length > 0 ? actions : undefined,
                 };
 
           if (quotedPost) {

@@ -1,3 +1,5 @@
+@import "react-day-picker/dist/style.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -60,6 +62,17 @@
 }
 
 @layer utilities {
+  /* Calendar styles for react-day-picker */
+  .rdp {
+    --rdp-cell-size: 40px;
+    --rdp-accent-color: hsl(var(--primary));
+    --rdp-background-color: hsl(var(--muted));
+    --rdp-accent-color-dark: hsl(var(--primary));
+    --rdp-background-color-dark: hsl(var(--muted));
+    --rdp-outline: 2px solid transparent;
+    --rdp-outline-selected: 2px solid hsl(var(--primary));
+  }
+  
   @layer utilities {
     /* Hide scrollbar for Chrome, Safari and Opera */
     .no-scrollbar::-webkit-scrollbar {
@@ -238,6 +251,27 @@
 
   .dark .button-hover-bg::before {
     background: hsl(var(--secondary) / 0.4);
+  }
+  
+  /* Active collectible button background */
+  .button-hover-bg.text-primary::before {
+    background: hsl(var(--primary) / 0.1);
+    opacity: 1;
+    transform: scale(1);
+  }
+  
+  .button-hover-bg.text-primary:hover::before {
+    background: hsl(var(--primary) / 0.15);
+    opacity: 1;
+    transform: scale(0.98);
+  }
+  
+  .dark .button-hover-bg.text-primary::before {
+    background: hsl(var(--primary) / 0.15);
+  }
+  
+  .dark .button-hover-bg.text-primary:hover::before {
+    background: hsl(var(--primary) / 0.2);
   }
 
   /* Wide hover bg for buttons with counters */

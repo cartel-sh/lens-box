@@ -29,6 +29,7 @@ export function lensItemToPost(item: AnyPost | TimelineItem): Post | null {
 
     post = {
       id: item.slug ?? item.id,
+      numericId: item.id, // Keep the numeric hex ID for collect actions
       author: lensAccountToUser(author),
       reactions: getReactions(item),
       comments: getCommentsFromItem(item),
@@ -42,13 +43,82 @@ export function lensItemToPost(item: AnyPost | TimelineItem): Post | null {
       isEdited: item.isEdited || false,
       platform: "lens",
       __typename: "Post",
-    };
+      ...{ 
+        actions: getPostActions(item),
+        stats: {
+          collects: item.stats?.collects || 0,
+          comments: item.stats?.comments || 0,
+          reposts: item.stats?.reposts || 0,
+          quotes: item.stats?.quotes || 0,
+          reactions: item.stats?.upvotes || 0,
+          bookmarks: item.stats?.bookmarks || 0,
+        },
+      },
+    } as any;
   } catch (error) {
     console.error(error);
     return null;
   }
 
   return post;
+}
+
+function getPostActions(post: LensPost): any {
+  const actions: any = {
+    canCollect: post.operations?.canSimpleCollect?.__typename === "SimpleCollectValidationPassed" || false,
+    hasCollected: post.operations?.hasSimpleCollected || false,
+    canComment: post.operations?.canComment?.__typename === "PostOperationValidationPassed" || false,
+    canRepost: post.operations?.canRepost?.__typename === "PostOperationValidationPassed" || false,
+    canQuote: post.operations?.canQuote?.__typename === "PostOperationValidationPassed" || false,
+    canEdit: post.operations?.canEdit?.__typename === "PostOperationValidationPassed" || false,
+  };
+  
+
+  // Extract collect details if available
+  if (post.actions && Array.isArray(post.actions)) {
+    const collectAction = post.actions.find((action: any) => action.__typename === "SimpleCollectAction");
+    if (collectAction) {
+      const collect = collectAction as any;
+      
+      // Extract price from payToCollect field
+      let price = null;
+      if (collect.payToCollect) {
+        if (collect.payToCollect.native) {
+          // Native GHO payment
+          price = {
+            amount: collect.payToCollect.native,
+            currency: "GHO",
+          };
+        } else if (collect.payToCollect.erc20) {
+          // ERC-20 payment (WGHO or other tokens)
+          price = {
+            amount: collect.payToCollect.erc20.value,
+            currency: collect.payToCollect.erc20.currency === "0x6bDc36E20D267Ff0dd6097799f82e78907105e2F" ? "WGHO" : "ERC20",
+          };
+        }
+      }
+      
+      // Check for price in the format fountain-app uses: payToCollect.amount
+      if (!price && collect.payToCollect?.amount) {
+        const amount = collect.payToCollect.amount;
+        price = {
+          amount: amount.value,
+          currency: amount.asset?.symbol || amount.asset?.currency || "GHO",
+        };
+      }
+      
+      actions.collectDetails = {
+        collectLimit: collect.collectLimit,
+        endsAt: collect.endsAt,
+        followersOnly: collect.followerOnly,
+        price: price,
+        recipients: collect.payToCollect?.recipients,
+        collectNftAddress: collect.collectNftAddress,
+      };
+    }
+  }
+
+  return actions;
 }
 
 function getReactions(post: LensPost): Partial<PostReactions> {
@@ -95,6 +165,7 @@ function getCommentsFromItem(post: any) {
 function processComment(comment: any) {
   return {
     id: comment.slug ?? comment.id,
+    numericId: comment.id, // Keep the numeric hex ID for actions
     author: comment.by ? lensAccountToUser(comment.by) : null,
     createdAt: new Date(comment.createdAt),
     updatedAt: new Date(comment.createdAt),

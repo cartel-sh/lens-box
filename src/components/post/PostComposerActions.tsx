@@ -1,5 +1,6 @@
 import { ImageIcon, SmileIcon } from "lucide-react";
 import { useState } from "react";
+import { CollectSettings, type CollectConfig } from "./CollectSettings";
 import { EmojiPicker } from "../emoji/EmojiPicker";
 import { Button } from "../ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "../ui/dropdown-menu";
@@ -7,13 +8,15 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "../ui/dr
 interface PostComposerActionsProps {
   onImageClick: () => void;
   onEmojiClick: (emoji: any) => void;
+  showCollectSettings?: boolean;
+  collectConfig?: CollectConfig;
+  onChangeCollectConfig?: (cfg: CollectConfig) => void;
 }
 
-export function PostComposerActions({ onImageClick, onEmojiClick }: PostComposerActionsProps) {
+export function PostComposerActions({ onImageClick, onEmojiClick, showCollectSettings = false, collectConfig, onChangeCollectConfig }: PostComposerActionsProps) {
   const [isEmojiPickerOpen, setEmojiPickerOpen] = useState(false);
 
   const handleEmojiClick = (emoji: any) => {
-    console.log('Emoji clicked:', emoji);
     onEmojiClick(emoji);
     // Keep the picker open so users can add multiple emojis
   };
@@ -29,6 +32,9 @@ export function PostComposerActions({ onImageClick, onEmojiClick }: PostComposer
       >
         <ImageIcon className="h-5 w-5 text-muted-foreground" />
       </Button>
+      {showCollectSettings && collectConfig && onChangeCollectConfig ? (
+        <CollectSettings config={collectConfig} onChange={onChangeCollectConfig} />
+      ) : null}
       <DropdownMenu open={isEmojiPickerOpen} onOpenChange={setEmojiPickerOpen}>
         <DropdownMenuTrigger asChild>
           <Button
@@ -39,7 +45,7 @@ export function PostComposerActions({ onImageClick, onEmojiClick }: PostComposer
             <SmileIcon className="h-5 w-5 text-muted-foreground" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent 
+        <DropdownMenuContent
           className="p-0"
           onInteractOutside={(event) => {
             // Close when clicking outside

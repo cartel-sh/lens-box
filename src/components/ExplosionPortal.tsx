@@ -5,7 +5,7 @@ import { createContext, useContext, useEffect, useMemo, useRef, useState } from 
 import Explosion from "react-canvas-confetti/dist/presets/explosion";
 import { createPortal } from "react-dom";
 
-type ExplosionType = "like" | "upvote" | "downvote";
+type ExplosionType = "like" | "upvote" | "downvote" | "collect";
 
 interface ExplosionEvent {
   id: string;
