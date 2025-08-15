@@ -123,13 +123,13 @@ export function CollectModal({
         </DialogHeader>
 
         <div className="space-y-4">
-          <div className="flex items-start gap-3">
+          <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full overflow-hidden">
               <UserAvatar user={post.author} link={false} card={false} />
             </div>
             <div className="flex-1">
               <p className="font-bold">{post.author.username}</p>
-              <p className="text-sm text-muted-foreground line-clamp-2">
+              <p className="text-sm text-muted-foreground line-clamp-1">
                 {post.metadata?.content || ""}
               </p>
             </div>

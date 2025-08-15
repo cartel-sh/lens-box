@@ -1,7 +1,7 @@
 "use client";
 
 import { format } from "date-fns";
-import { ChevronDownIcon, ShoppingBag } from "lucide-react";
+import { ChevronDownIcon, ChevronUpIcon, ShoppingBag } from "lucide-react";
 import { useState } from "react";
 import { Button } from "../ui/button";
 import { Calendar } from "../ui/calendar";
@@ -103,7 +103,7 @@ export function CollectSettings({ config, onChange }: CollectSettingsProps) {
           <DialogHeader>
             <DialogTitle>Collect Settings</DialogTitle>
             <DialogDescription>
-              Configure how others can collect your post as an NFT
+              Configure how others can collect your post
             </DialogDescription>
           </DialogHeader>
 
@@ -174,11 +174,12 @@ export function CollectSettings({ config, onChange }: CollectSettingsProps) {
                     className="w-full justify-between"
                   >
                     {selectedDate ? format(selectedDate, "PPP") : "Select date"}
-                    <ChevronDownIcon className="h-4 w-4" />
+                    {datePickerOpen ? <ChevronUpIcon className="h-4 w-4" /> : <ChevronDownIcon className="h-4 w-4" />}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
+                <PopoverContent className="p-0 w-full" side="top" align="start">
                   <Calendar
+                    className="w-full"
                     mode="single"
                     selected={selectedDate}
                     onSelect={handleDateSelect}

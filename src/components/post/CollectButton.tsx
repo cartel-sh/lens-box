@@ -188,7 +188,7 @@ export function CollectButton({ post, variant = "post" }: CollectButtonProps) {
           icon={
             <ShoppingBag
               size={variant === "post" ? 18 : 16}
-              strokeWidth={1.2}
+              strokeWidth={2.0}
               stroke={hasCollected ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))"}
               fill="none"
               className="transition-all duration-200"
