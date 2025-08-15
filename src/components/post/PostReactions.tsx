@@ -68,7 +68,9 @@ export function ReactionsList({
           onClick={handleLikeClick}
         />
       </span>
-      <CollectButton post={post} variant={isComment ? "comment" : "post"} />
+      <span className="ml-auto">
+        <CollectButton post={post} variant={isComment ? "comment" : "post"} />
+      </span>
     </div>
   );
 }

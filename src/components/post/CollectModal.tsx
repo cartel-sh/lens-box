@@ -28,7 +28,6 @@ export function CollectModal({
   hasCollected,
   insufficientBalance = false,
 }: CollectModalProps) {
-  // Extract collect details from post (this would come from the post data)
   const collectDetails = (post as any).actions?.collectDetails || {};
   
   const price = collectDetails.price;
@@ -38,22 +37,18 @@ export function CollectModal({
   const totalCollected = (post as any).stats?.collects || 0;
   const collectNftAddress = collectDetails.collectNftAddress;
   
-  // Extract media from post metadata
   const getPostMedia = () => {
     const metadata = post.metadata as any;
     if (!metadata) return null;
     
-    // Check for image metadata
     if (metadata.__typename === "ImageMetadata" && metadata.image?.item) {
       return metadata.image.item;
     }
     
-    // Check for video metadata with cover
     if (metadata.__typename === "VideoMetadata" && metadata.video?.cover) {
       return metadata.video.cover;
     }
     
-    // Check for attachments array (first image attachment)
     if (metadata.attachments && Array.isArray(metadata.attachments)) {
       const imageAttachment = metadata.attachments.find((att: any) => 
         att.item && att.type && att.type.startsWith("image/")
@@ -70,7 +65,6 @@ export function CollectModal({
 
   const formatPrice = (price: any) => {
     if (!price || !price.amount) return "Free";
-    // Format the currency display
     const currency = price.currency || "GHO";
     return `${price.amount} ${currency}`;
   };
@@ -91,20 +85,17 @@ export function CollectModal({
   const isExpired = endsAt && new Date(endsAt) < new Date();
   const canCollect = !hasCollected && !isLimitReached && !isExpired;
 
-  // Calculate total revenue
   const calculateRevenue = () => {
     if (!price || !price.amount || totalCollected === 0) return null;
     const revenue = (parseFloat(price.amount) * totalCollected).toFixed(2);
     return `${revenue} ${price.currency || "GHO"}`;
   };
 
-  // Copy NFT address to clipboard
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     toast.success("Address copied to clipboard");
   };
 
-  // Format address for display
   const formatAddress = (address: string) => {
     if (!address) return "";
     return `${address.slice(0, 6)}...${address.slice(-4)}`;

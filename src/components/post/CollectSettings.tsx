@@ -157,9 +157,6 @@ export function CollectSettings({ config, onChange }: CollectSettingsProps) {
                   />
                 </div>
               </div>
-              <p className="text-xs text-muted-foreground">
-                Set a price to collect (1.5% protocol fee applies)
-              </p>
             </div>
 
             <div className="space-y-2">

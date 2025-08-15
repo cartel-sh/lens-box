@@ -14,6 +14,7 @@ import { useExplosion } from "../ExplosionPortal";
 import { ReactionButton } from "../ReactionButton";
 import { CollectModal } from "./CollectModal";
 import { getLensClient } from "~/utils/lens/getLensClient";
+import { Button } from "../ui/button";
 
 interface CollectButtonProps {
   post: Post;
@@ -31,7 +32,6 @@ export function CollectButton({ post, variant = "post" }: CollectButtonProps) {
   const [isCollecting, setIsCollecting] = useState(false);
   const [insufficientBalance, setInsufficientBalance] = useState(false);
 
-  // Check if post has collect action enabled
   const hasCollectAction = (post as any).actions?.canCollect || false;
   const collectStats = (post as any).stats?.collects || 0;
   const hasCollected = (post as any).actions?.hasCollected || false;
@@ -101,7 +101,6 @@ export function CollectButton({ post, variant = "post" }: CollectButtonProps) {
         return;
       }
 
-      // Use the numeric hex ID, not the slug
       const postIdForCollect = (post as any).numericId || post.id;
       const result = await executePostAction(client, {
         post: postId(postIdForCollect),
@@ -125,21 +124,18 @@ export function CollectButton({ post, variant = "post" }: CollectButtonProps) {
         throw new Error(errorMessage);
       }
 
-      // Execute the transaction with wallet
       const txResult = await handleOperationWith(walletClient as any)(result.value);
 
       if (txResult.isErr()) {
         throw new Error(txResult.error.message || "Transaction failed");
       }
 
-      // Success!
       if (collectButtonRef.current && !hasCollected) {
         triggerExplosion("collect", collectButtonRef.current);
       }
 
-      // Show success toast with explorer link
       const txHash = txResult.value;
-      const explorerUrl = `https://explorer.lens.xyz/tx/${txHash}`;
+      const explorerUrl = `https://lenscan.io/tx/${txHash}`;
 
       toast.success(
         <div className="flex items-center gap-2">
@@ -169,7 +165,7 @@ export function CollectButton({ post, variant = "post" }: CollectButtonProps) {
   return (
     <>
       <span ref={collectButtonRef}>
-        <ReactionButton
+        {/* <ReactionButton
           variant={variant}
           reactionType="Collect"
           reaction={{
@@ -186,7 +182,10 @@ export function CollectButton({ post, variant = "post" }: CollectButtonProps) {
             />
           }
           onClick={handleCollectClick}
-        />
+        /> */}
+        <Button size="sm" className="text-sm h-8 font-medium" onClick={handleCollectClick}>
+          Collect
+        </Button>
       </span>
 
       {isModalOpen && (
@@ -195,7 +194,7 @@ export function CollectButton({ post, variant = "post" }: CollectButtonProps) {
           isOpen={isModalOpen}
           onClose={() => {
             setIsModalOpen(false);
-            setInsufficientBalance(false); // Reset insufficient balance when closing
+            setInsufficientBalance(false);
           }}
           onCollect={handleCollect}
           isCollecting={isCollecting}
