@@ -3,6 +3,8 @@
 import type { Post } from "@cartel-sh/ui";
 import { chains } from "@lens-chain/sdk/viem";
 import { handleOperationWith } from "@lens-protocol/client/viem";
+import { postId } from "@lens-protocol/client";
+import { executePostAction } from "@lens-protocol/client/actions";
 import { ExternalLinkIcon, ShoppingBag } from "lucide-react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
@@ -11,6 +13,7 @@ import { useUser } from "~/components/user/UserContext";
 import { useExplosion } from "../ExplosionPortal";
 import { ReactionButton } from "../ReactionButton";
 import { CollectModal } from "./CollectModal";
+import { getLensClient } from "~/utils/lens/getLensClient";
 
 interface CollectButtonProps {
   post: Post;
@@ -85,22 +88,33 @@ export function CollectButton({ post, variant = "post" }: CollectButtonProps) {
         }
       }
 
+      const client = await getLensClient();
+      if (!client || !client.isSessionClient()) {
+        toast.error("Not authenticated");
+        setIsCollecting(false);
+        return;
+      }
+
+      if (!walletClient) {
+        toast.error("Connect your wallet to collect");
+        setIsCollecting(false);
+        return;
+      }
+
       // Use the numeric hex ID, not the slug
       const postIdForCollect = (post as any).numericId || post.id;
-      const response = await fetch(`/api/posts/${postIdForCollect}/collect`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      const result = await executePostAction(client, {
+        post: postId(postIdForCollect),
+        action: {
+          simpleCollect: {
+            selected: true,
+          },
         },
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        // Check if it's an insufficient balance error
-        const errorMessage = data.error || data.message || "Failed to collect";
+      if (result.isErr()) {
+        const errorMessage = result.error.message || "Failed to execute collect action";
         if (errorMessage.includes("Not enough balance") || errorMessage.includes("insufficient")) {
-          // Don't close the modal, just show the error
           setInsufficientBalance(true);
           toast.error("Insufficient balance", {
             description: "You don't have enough funds to collect this post. Please add funds to your wallet and try again.",
@@ -111,62 +125,39 @@ export function CollectButton({ post, variant = "post" }: CollectButtonProps) {
         throw new Error(errorMessage);
       }
 
-      // Handle wallet signature if needed
-      if (data.needsWalletSignature && data.result && walletClient) {
-        try {
-          // Execute the transaction with wallet
-          const txResult = await handleOperationWith(walletClient as any)(data.result);
+      // Execute the transaction with wallet
+      const txResult = await handleOperationWith(walletClient as any)(result.value);
 
-          if (txResult.isErr()) {
-            throw new Error(txResult.error.message || "Transaction failed");
-          }
-
-          // Success!
-          if (collectButtonRef.current && !hasCollected) {
-            triggerExplosion("collect", collectButtonRef.current);
-          }
-
-          // Show success toast with explorer link
-          const txHash = txResult.value;
-          const explorerUrl = `https://explorer.lens.xyz/tx/${txHash}`;
-
-          toast.success(
-            <div className="flex items-center gap-2">
-              <span>Post collected successfully!</span>
-              <a
-                href={explorerUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-primary hover:underline"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <span>View</span>
-                <ExternalLinkIcon className="h-3 w-3" />
-              </a>
-            </div>
-          );
-
-          setIsModalOpen(false);
-        } catch (walletError: any) {
-          console.error("Wallet transaction failed:", walletError);
-
-          // Check if it's a chain mismatch error
-          if (walletError.message?.includes("chain") || walletError.message?.includes("Expected Chain ID")) {
-            toast.error("Wrong network. Please switch to Lens Network and try again.");
-            setIsCollecting(false);
-            return;
-          }
-
-          throw new Error(walletError.message || "Wallet transaction failed");
-        }
-      } else if (!data.needsWalletSignature) {
-        // Gasless transaction completed
-        if (collectButtonRef.current && !hasCollected) {
-          triggerExplosion("collect", collectButtonRef.current);
-        }
-        toast.success("Post collected successfully!");
-        setIsModalOpen(false);
+      if (txResult.isErr()) {
+        throw new Error(txResult.error.message || "Transaction failed");
       }
+
+      // Success!
+      if (collectButtonRef.current && !hasCollected) {
+        triggerExplosion("collect", collectButtonRef.current);
+      }
+
+      // Show success toast with explorer link
+      const txHash = txResult.value;
+      const explorerUrl = `https://explorer.lens.xyz/tx/${txHash}`;
+
+      toast.success(
+        <div className="flex items-center gap-2">
+          <span>Post collected successfully!</span>
+          <a
+            href={explorerUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 text-primary hover:underline"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <span>View</span>
+            <ExternalLinkIcon className="h-3 w-3" />
+          </a>
+        </div>
+      );
+
+      setIsModalOpen(false);
     } catch (error: any) {
       console.error("Failed to collect:", error);
       toast.error(error.message || "Failed to collect post");
