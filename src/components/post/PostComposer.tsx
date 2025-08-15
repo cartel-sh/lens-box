@@ -38,6 +38,8 @@ import { ComposerProvider, useComposer } from "./ComposerContext";
 import { PostComposerActions } from "./PostComposerActions";
 import { QuotedPostPreview } from "./QuotedPostPreview";
 import { CollectSettings, type CollectConfig } from "./CollectSettings";
+import { useAtom } from "jotai";
+import { collectSettingsAtom } from "@/src/atoms/collectSettings";
 
 const MAX_FILE_SIZE = 8 * 1024 * 1024; // 8MB
 
@@ -179,7 +181,14 @@ function ComposerContent() {
 
   const currentUser = user || contextUser;
   const [mediaFiles, setMediaFiles] = useState<MediaItem[]>([]);
-  const [collectConfig, setCollectConfig] = useState<CollectConfig>({ enabled: false });
+  const [persistedCollectConfig, setPersistedCollectConfig] = useAtom(collectSettingsAtom);
+  const [collectConfig, setCollectConfig] = useState<CollectConfig>(() => ({
+    enabled: persistedCollectConfig.enabled ?? true,
+    collectLimit: persistedCollectConfig.collectLimit,
+    endsAt: persistedCollectConfig.endsAt,
+    followersOnly: persistedCollectConfig.followersOnly,
+    price: persistedCollectConfig.price,
+  }));
 
   const pathSegments = pathname.split("/");
   const communityFromPath = pathSegments[1] === "c" ? pathSegments[2] : "";
@@ -296,23 +305,23 @@ function ComposerContent() {
         const attachments =
           uploadedMedia.length > 1
             ? uploadedMedia
-                .slice(1)
-                .map((m) => {
-                  if (m.type.startsWith("image/")) {
-                    return {
-                      item: m.uri,
-                      type: castToMediaImageType(m.type),
-                    };
-                  }
-                  if (m.type.startsWith("video/")) {
-                    return {
-                      item: m.uri,
-                      type: castToMediaVideoType(m.type),
-                    };
-                  }
-                  return null;
-                })
-                .filter(Boolean)
+              .slice(1)
+              .map((m) => {
+                if (m.type.startsWith("image/")) {
+                  return {
+                    item: m.uri,
+                    type: castToMediaImageType(m.type),
+                  };
+                }
+                if (m.type.startsWith("video/")) {
+                  return {
+                    item: m.uri,
+                    type: castToMediaVideoType(m.type),
+                  };
+                }
+                return null;
+              })
+              .filter(Boolean)
             : undefined;
 
         return {
@@ -363,7 +372,13 @@ function ComposerContent() {
       clearForm: () => {
         form.setValue("content", "");
         setMediaFiles([]);
-        setCollectConfig({ enabled: false });
+        setCollectConfig({
+          enabled: persistedCollectConfig.enabled ?? true,
+          collectLimit: persistedCollectConfig.collectLimit,
+          endsAt: persistedCollectConfig.endsAt,
+          followersOnly: persistedCollectConfig.followersOnly,
+          price: persistedCollectConfig.price,
+        });
       },
     });
   }
@@ -456,10 +471,22 @@ function ComposerContent() {
 
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <PostComposerActions onImageClick={open} onEmojiClick={handleEmojiClick} />
-                  {!editingPost && !replyingTo && (
-                    <CollectSettings config={collectConfig} onChange={setCollectConfig} />
-                  )}
+                  <PostComposerActions
+                    onImageClick={open}
+                    onEmojiClick={handleEmojiClick}
+                    showCollectSettings={!editingPost && !replyingTo}
+                    collectConfig={collectConfig}
+                    onChangeCollectConfig={(cfg) => {
+                      setCollectConfig(cfg);
+                      setPersistedCollectConfig({
+                        enabled: cfg.enabled,
+                        collectLimit: cfg.collectLimit,
+                        endsAt: cfg.endsAt,
+                        followersOnly: cfg.followersOnly,
+                        price: cfg.price ? { amount: cfg.price.amount, currency: "GHO" } : undefined,
+                      });
+                    }}
+                  />
                 </div>
               </div>
               <MediaPreview files={mediaFiles} onRemove={removeMedia} onReorder={reorderMedia} />

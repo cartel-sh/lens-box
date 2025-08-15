@@ -9,7 +9,6 @@ import { Checkbox } from "../ui/checkbox";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog";
 
 export interface CollectConfig {
@@ -64,17 +63,7 @@ export function CollectSettings({ config, onChange }: CollectSettingsProps) {
     }
   };
 
-  const handleCurrencyChange = (currency: "GHO" | "WGHO") => {
-    if (config.price) {
-      onChange({
-        ...config,
-        price: {
-          ...config.price,
-          currency,
-        },
-      });
-    }
-  };
+  // Currency is fixed to GHO in UI; keep config currency as GHO when price is set
 
   const handleDateSelect = (date: Date | undefined) => {
     setSelectedDate(date);
@@ -98,8 +87,7 @@ export function CollectSettings({ config, onChange }: CollectSettingsProps) {
         type="button"
         variant="ghost"
         size="icon"
-        className={`rounded-full w-8 h-8 hover:bg-transparent button-hover-bg button-hover-bg-equal ${config.enabled ? "text-primary" : ""
-          }`}
+        className={`rounded-full w-8 h-8 hover:bg-transparent button-hover-bg button-hover-bg-equal`}
         onClick={() => {
           if (!config.enabled) {
             handleToggle(true);
@@ -107,7 +95,7 @@ export function CollectSettings({ config, onChange }: CollectSettingsProps) {
           setIsOpen(true);
         }}
       >
-        <ShoppingBag strokeWidth={2.0} className={`h-5 w-5 ${config.enabled ? "text-primary" : "text-muted-foreground"}`} />
+        <ShoppingBag strokeWidth={2.0} className={`h-[19px] w-[19px] text-muted-foreground`} />
       </Button>
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -121,9 +109,10 @@ export function CollectSettings({ config, onChange }: CollectSettingsProps) {
 
           <div className="space-y-3">
             <div className="space-y-2">
-              <Label htmlFor="collect-limit" className="text-xs">
-                Collect Limit
-              </Label>
+              <Label className="text-sm">Collect limits</Label>
+              {/* <Label htmlFor="collect-limit" className="text-sm">
+                Amount of collects
+              </Label> */}
               <Input
                 id="collect-limit"
                 type="number"
@@ -132,46 +121,41 @@ export function CollectSettings({ config, onChange }: CollectSettingsProps) {
                 onChange={(e) => handleLimitChange(e.target.value)}
                 onKeyDown={(e) => e.stopPropagation()}
                 min="1"
-                className="h-8 text-sm"
               />
-              <p className="text-xs text-muted-foreground">
-                Leave empty for unlimited collects
-              </p>
+              <div className="flex items-center space-x-2 pt-1">
+                <Checkbox
+                  id="followers-only"
+                  checked={config.followersOnly || false}
+                  onCheckedChange={handleFollowersOnlyChange}
+                />
+                <Label htmlFor="followers-only" className="text-sm cursor-pointer">
+                  Followers only
+                </Label>
+              </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="collect-price" className="text-xs">
+              <Label htmlFor="collect-price" className="text-sm">
                 Price
               </Label>
               <div className="flex gap-2">
-                <input
-                  id="collect-price"
-                  type="text"
-                  inputMode="decimal"
-                  placeholder="Free"
-                  value={localPrice}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    if (value === "" || /^\d*\.?\d*$/.test(value)) {
-                      handlePriceChange(value);
-                    }
-                  }}
-                  className="flex h-8 w-full rounded-md border border-input bg-background px-3 py-1 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 flex-1"
-                />
-                {config.price && (
-                  <Select
-                    value={config.price.currency}
-                    onValueChange={handleCurrencyChange}
-                  >
-                    <SelectTrigger className="h-8 w-20 text-sm">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="GHO">GHO</SelectItem>
-                      <SelectItem value="WGHO">WGHO</SelectItem>
-                    </SelectContent>
-                  </Select>
-                )}
+                <div className="relative w-full">
+                  <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-muted-foreground/60">$</span>
+                  <Input
+                    id="collect-price"
+                    type="text"
+                    inputMode="decimal"
+                    placeholder="Free"
+                    value={localPrice}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (value === "" || /^\d*\.?\d*$/.test(value)) {
+                        handlePriceChange(value);
+                      }
+                    }}
+                    className="pl-8"
+                  />
+                </div>
               </div>
               <p className="text-xs text-muted-foreground">
                 Set a price to collect (1.5% protocol fee applies)
@@ -179,7 +163,7 @@ export function CollectSettings({ config, onChange }: CollectSettingsProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="collect-end" className="text-xs">
+              <Label htmlFor="collect-end" className="text-sm">
                 End Date
               </Label>
               <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
@@ -187,7 +171,7 @@ export function CollectSettings({ config, onChange }: CollectSettingsProps) {
                   <Button
                     variant="outline"
                     id="collect-end"
-                    className="w-full h-8 justify-between font-normal text-sm"
+                    className="w-full justify-between"
                   >
                     {selectedDate ? format(selectedDate, "PPP") : "Select date"}
                     <ChevronDownIcon className="h-4 w-4" />
@@ -203,55 +187,24 @@ export function CollectSettings({ config, onChange }: CollectSettingsProps) {
                   />
                 </PopoverContent>
               </Popover>
-              <p className="text-xs text-muted-foreground">
-                Optional deadline for collecting
-              </p>
             </div>
 
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="followers-only"
-                checked={config.followersOnly || false}
-                onCheckedChange={handleFollowersOnlyChange}
-              />
-              <Label
-                htmlFor="followers-only"
-                className="text-xs cursor-pointer"
-              >
-                Followers only
-              </Label>
-            </div>
+            {/* Followers only moved into Collect limits section */}
           </div>
 
           <DialogFooter>
-            <div className="w-full flex items-center gap-2">
-              {config.enabled && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 px-2 text-xs"
-                  onClick={() => {
-                    handleToggle(false);
-                    setIsOpen(false);
-                  }}
-                >
-                  Disable
-                </Button>
-              )}
-              <Button
-                size="sm"
-                variant="outline"
-                className="h-8 text-xs ml-auto"
-                type="button"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setIsOpen(false);
-                }}
-              >
-                Done
-              </Button>
-            </div>
+            <Button
+              variant="outline"
+              className="w-full rounded-2xl mt-4"
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setIsOpen(false);
+              }}
+            >
+              Done
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
