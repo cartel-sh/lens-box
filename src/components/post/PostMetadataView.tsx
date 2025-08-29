@@ -158,7 +158,17 @@ const getImageMediaContent = (metadata: ImageMetadataDetails, authorHandle?: str
   if (attachments && Array.isArray(attachments)) {
     attachments.forEach((att: any) => {
       if (att.item && att.type) {
-        allMedia.push({ item: att.item, type: castToMediaImageType(att.type) });
+        let mediaItemAlreadyExists = false
+
+        allMedia.forEach((media) => {
+          if (media.item === att.item) mediaItemAlreadyExists = true
+        })
+
+        if (!mediaItemAlreadyExists)
+          allMedia.push({
+            item: att.item,
+            type: castToMediaImageType(att.type),
+          })
       }
     });
   }
