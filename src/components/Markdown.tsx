@@ -7,6 +7,7 @@ import remarkBreaks from "remark-breaks";
 import remarkGfm from "remark-gfm";
 import { getBaseUrl } from "~/utils/getBaseUrl";
 import { parseContent } from "~/utils/parseContent";
+import { isAccountMention } from "~/utils/typeGuards";
 import { CommunityHandle } from "./communities/CommunityHandle";
 import { LinkPreview } from "./embeds/LinkPreview";
 import { ImageViewer } from "./ImageViewer";
@@ -62,7 +63,7 @@ const Markdown: React.FC<{
   let processedText = content;
   if (mentions && mentions.length > 0) {
     mentions.forEach((mention, index) => {
-      if (mention.__typename === "AccountMention") {
+      if (isAccountMention(mention)) {
         const mentionPattern =
           mention.replace?.from || (mention.localName ? `@lens/${mention.localName}` : `@${mention.account}`);
 
@@ -86,7 +87,7 @@ const Markdown: React.FC<{
         if (href.startsWith(`${BASE_URL}mention/`) && mentions) {
           const mentionIndex = Number.parseInt(href.split("/mention/")[1]);
           const mention = mentions[mentionIndex];
-          if (mention && mention.__typename === "AccountMention") {
+          if (mention && isAccountMention(mention)) {
             let handle = mention.localName;
             if (!handle && mention.replace?.from) {
               const handleMatch = mention.replace.from.match(/@lens\/(\w+)/);

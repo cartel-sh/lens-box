@@ -5,7 +5,7 @@
       "name": "lens-box",
       "dependencies": {
         "@aws-sdk/client-s3": "^3.775.0",
-        "@cartel-sh/ui": "0.9.0",
+        "@cartel-sh/ui": "0.10.0",
         "@coinbase/wallet-sdk": "^3.9.3",
         "@dnd-kit/core": "^6.3.1",
         "@dnd-kit/sortable": "^10.0.0",
@@ -315,7 +315,7 @@
 
     "@biomejs/cli-win32-x64": ["@biomejs/cli-win32-x64@2.0.2", "", { "os": "win32", "cpu": "x64" }, "sha512-eI1/Ubb5BOLGwA/RNNZYyAjlhOr6K2Gk3ERQ6levG36FRZH9pK4n5Syby3fhFQzzWtEVMkFcktOHjyiwtPmiuQ=="],
 
-    "@cartel-sh/ui": ["@cartel-sh/ui@0.9.0", "", { "peerDependencies": { "@lens-protocol/client": "*", "@radix-ui/react-avatar": "*", "@radix-ui/react-context-menu": "*", "@radix-ui/react-dialog": "*", "@radix-ui/react-dropdown-menu": "*", "@radix-ui/react-hover-card": "*", "@radix-ui/react-slot": "*", "@radix-ui/react-tooltip": "*", "@tanstack/react-query": "*", "class-variance-authority": "*", "clsx": "*", "lucide-react": "*", "next": "*", "react": "*", "react-dom": "*", "tailwind-merge": "*" } }, "sha512-s+qV53RJ2Aty3WAXjo+mw8pGq846ZLW/WI6Aa5PcjMZI/b7bOQADG2IwcGpLiS40hRIu8V5HgmC+SNkT0G63Cw=="],
+    "@cartel-sh/ui": ["@cartel-sh/ui@0.10.0", "", { "peerDependencies": { "@lens-protocol/client": "*", "@radix-ui/react-avatar": "*", "@radix-ui/react-context-menu": "*", "@radix-ui/react-dialog": "*", "@radix-ui/react-dropdown-menu": "*", "@radix-ui/react-hover-card": "*", "@radix-ui/react-slot": "*", "@radix-ui/react-tooltip": "*", "@tanstack/react-query": "*", "class-variance-authority": "*", "clsx": "*", "lucide-react": "*", "next": "*", "react": "*", "react-dom": "*", "tailwind-merge": "*" } }, "sha512-nmdLpDYPWlkwaASycZrRW0FCR4M4JjKlmVDaaAZyJdsQpUkOZXSExTnEp9ssaMK/RraMcVhD2SlHV1khiT6gJw=="],
 
     "@coinbase/wallet-sdk": ["@coinbase/wallet-sdk@3.9.3", "", { "dependencies": { "bn.js": "^5.2.1", "buffer": "^6.0.3", "clsx": "^1.2.1", "eth-block-tracker": "^7.1.0", "eth-json-rpc-filters": "^6.0.0", "eventemitter3": "^5.0.1", "keccak": "^3.0.3", "preact": "^10.16.0", "sha.js": "^2.4.11" } }, "sha512-N/A2DRIf0Y3PHc1XAMvbBUu4zisna6qAdqABMZwBMNEfWrXpAwx16pZGkYCLGE+Rvv1edbcB2LYDRnACNcmCiw=="],
 

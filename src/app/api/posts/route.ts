@@ -4,6 +4,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { getServerAuth } from "~/utils/getServerAuth";
 import { lensItemToPost } from "~/utils/lens/converters/postConverter";
 import { uploadMetadata } from "~/utils/uploadMetadata";
+import { isImageMetadata, isVideoMetadata } from "~/utils/typeGuards";
 
 export const dynamic = "force-dynamic";
 
@@ -74,8 +75,8 @@ export async function GET(req: NextRequest) {
       .filter((post) => {
         if (!post) return false;
         if (searchParams.get("media") !== "true") return true;
-        const type = post.metadata?.__typename;
-        return type === "ImageMetadata" || type === "VideoMetadata";
+        const metadata = post.metadata;
+        return metadata && (isImageMetadata(metadata) || isVideoMetadata(metadata));
       });
 
     return NextResponse.json({ data: posts, nextCursor: data.value.pageInfo.next }, { status: 200 });

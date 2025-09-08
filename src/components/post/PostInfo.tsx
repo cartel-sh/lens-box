@@ -1,5 +1,5 @@
 import type { Post } from "@cartel-sh/ui";
-import { Check, Copy, EllipsisIcon, Link2, PenIcon } from "lucide-react";
+import { Check, EllipsisIcon, Link2, PenIcon } from "lucide-react";
 import { useState } from "react";
 import { RiBlueskyLine } from "react-icons/ri";
 import { SiFarcaster, SiX } from "react-icons/si";
@@ -21,14 +21,14 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/
 import { menuItems } from "./PostMenuConfig";
 import { usePostStateContext } from "./PostStateContext";
 
-export const PostInfo = ({ post, onReply }: { post: Post; onReply?: () => void }) => {
+export const PostInfo = ({ post }: { post: Post }) => {
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const { requireAuth } = useUser();
   const { shouldShowItem, getItemProps, postLink, isSaved } = usePostStateContext();
   const author = post.author;
   const handle = author.username;
-  const tags = post?.metadata?.tags || [];
+  const tags: string[] = [];
   const content = "content" in post.metadata ? (post.metadata.content as string) : "";
 
   const handleCopyLink = async () => {

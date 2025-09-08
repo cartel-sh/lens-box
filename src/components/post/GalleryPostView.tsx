@@ -4,6 +4,7 @@ import type { Post } from "@cartel-sh/ui";
 import { useEffect, useState } from "react";
 import Link from "../Link";
 import { Card } from "../ui/card";
+import { isImageMetadata, isVideoMetadata, getMediaUrl, getMediaCover } from "~/utils/typeGuards";
 
 const generateVideoThumbnail = (videoUrl: string): Promise<{ thumbnail: string; aspectRatio: number }> => {
   return new Promise((resolve, reject) => {
@@ -41,24 +42,23 @@ const generateVideoThumbnail = (videoUrl: string): Promise<{ thumbnail: string; 
 
 export const GalleryPostView = ({ item }: { item: Post }) => {
   const metadata = item.metadata;
-  const type = metadata?.__typename;
   const [generatedThumbnail, setGeneratedThumbnail] = useState<string | null>(null);
 
   let src: string | undefined;
   let isVideo = false;
 
-  if (type === "ImageMetadata") {
-    src = metadata?.image?.item;
-  } else if (type === "VideoMetadata") {
-    src = metadata?.video?.cover;
+  if (isImageMetadata(metadata)) {
+    src = metadata.image?.item;
+  } else if (isVideoMetadata(metadata)) {
+    src = metadata.video?.cover;
     isVideo = true;
-    if (!src && metadata?.video?.item) {
+    if (!src && metadata.video?.item) {
       src = generatedThumbnail || metadata.video.item;
     }
   }
 
   useEffect(() => {
-    if (type === "VideoMetadata" && !metadata?.video?.cover && metadata?.video?.item && !generatedThumbnail) {
+    if (isVideoMetadata(metadata) && !metadata.video?.cover && metadata.video?.item && !generatedThumbnail) {
       generateVideoThumbnail(metadata.video.item)
         .then(({ thumbnail }) => {
           setGeneratedThumbnail(thumbnail);
@@ -67,14 +67,14 @@ export const GalleryPostView = ({ item }: { item: Post }) => {
           console.error("Failed to generate video thumbnail:", error);
         });
     }
-  }, [type, metadata?.video?.cover, metadata?.video?.item, generatedThumbnail]);
+  }, [metadata, generatedThumbnail]);
 
   if (!src && !isVideo) return null;
   
   return (
     <Link href={`/p/${item.id}`} className="hover:scale-[102%] active:scale-[100%] active:opacity-60 transition-all duration-100">
       <Card className="overflow-hidden p-0">
-        {isVideo && !metadata?.video?.cover && !generatedThumbnail ? (
+        {isVideo && isVideoMetadata(metadata) && !metadata.video?.cover && !generatedThumbnail ? (
           <div className="relative w-full aspect-square bg-muted flex items-center justify-center">
             <svg className="w-12 h-12 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path

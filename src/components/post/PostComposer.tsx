@@ -37,7 +37,9 @@ import { UserAvatar } from "../user/UserAvatar";
 import { ComposerProvider, useComposer } from "./ComposerContext";
 import { PostComposerActions } from "./PostComposerActions";
 import { QuotedPostPreview } from "./QuotedPostPreview";
-import { CollectSettings, type CollectConfig } from "./CollectSettings";
+import { isImageMetadata, isVideoMetadata, isMediaMetadata } from "~/utils/typeGuards";
+import type { CollectConfig } from "./CollectSettings";
+import type { AnyMetadata } from "@cartel-sh/ui";
 import { useAtom } from "jotai";
 import { collectSettingsAtom } from "@/src/atoms/collectSettings";
 
@@ -207,16 +209,16 @@ function ComposerContent() {
   useEffect(() => {
     if (editingPost?.metadata) {
       const existingMedia: MediaItem[] = [];
-      const metadata = editingPost.metadata;
+      const metadata = editingPost.metadata as AnyMetadata;
 
-      if (metadata.__typename === "ImageMetadata" && metadata.image?.item) {
+      if (isImageMetadata(metadata) && metadata.image?.item) {
         existingMedia.push({
           type: "url",
           url: metadata.image.item,
           mimeType: normalizeImageMimeType(metadata.image.type) || "image/jpeg",
           id: `existing-${Date.now()}-0`,
         });
-      } else if (metadata.__typename === "VideoMetadata" && metadata.video?.item) {
+      } else if (isVideoMetadata(metadata) && metadata.video?.item) {
         existingMedia.push({
           type: "url",
           url: metadata.video.item,
@@ -225,7 +227,7 @@ function ComposerContent() {
         });
       }
 
-      if (metadata.attachments && Array.isArray(metadata.attachments)) {
+      if (isMediaMetadata(metadata) && metadata.attachments && Array.isArray(metadata.attachments)) {
         metadata.attachments.forEach((att: any, index: number) => {
           if (att.item) {
             existingMedia.push({

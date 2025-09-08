@@ -204,7 +204,7 @@ export const PostView = ({
                   {!settings.isComment && !settings.inThread && !item.quoteOn && !item.isRepost && (
                     <ReplyInfo post={item} />
                   )}
-                  <PostInfo post={item} onReply={handleReply} />
+                  <PostInfo post={item} />
                   <PostContent ref={postContentRef} post={item} collapsed={collapsed} setCollapsed={setCollapsed} />
                   {settings?.showBadges && (
                     <div className="mt-1">
