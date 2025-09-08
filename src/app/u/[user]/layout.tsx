@@ -1,4 +1,4 @@
-import { lensAccountStatsToUserStats } from "@cartel-sh/ui";
+import { lensAccountStatsToUserStats } from "~/utils/lens/converters/userConverter";
 import { fetchAccountStats } from "@lens-protocol/client/actions";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";

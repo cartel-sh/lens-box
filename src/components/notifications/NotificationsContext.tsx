@@ -22,7 +22,7 @@ const NotificationsContext = createContext<NotificationsContextValue | undefined
 function parseNotification(raw: any): Notification {
   return {
     ...raw,
-    createdAt: new Date(raw.createdAt),
+    createdAt: raw.createdAt ? new Date(raw.createdAt) : null,
     actedOn: raw.actedOn
       ? {
           ...raw.actedOn,
@@ -77,13 +77,21 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     refetchIntervalInBackground: true, // Continue polling in background
   });
 
-  // Sort notifications by date
-  const sortedNotifications = [...notifications].sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-  );
+  // Sort notifications by date, null timestamps go to end
+  const sortedNotifications = [...notifications].sort((a, b) => {
+    if (!a.createdAt && !b.createdAt) return 0;
+    if (!a.createdAt) return 1; // a goes to end
+    if (!b.createdAt) return -1; // b goes to end
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
 
   const computeNewCount = (items: Notification[]) => {
     const newNotifications = items.filter((n) => {
+      // Skip notifications without timestamps - they can't be counted as "new"
+      if (!n.createdAt) {
+        return false;
+      }
+      
       const notificationTime = new Date(n.createdAt).getTime();
       const isNew = notificationTime > lastSeen;
 

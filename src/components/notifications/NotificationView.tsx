@@ -5,12 +5,15 @@ import {
   AtSignIcon,
   CirclePlusIcon,
   ExternalLinkIcon,
+  GiftIcon,
   HeartIcon,
   MessageCircleIcon,
   MessageSquareQuoteIcon,
   Repeat2Icon,
+  ShieldCheckIcon,
   ShieldIcon,
   ShieldOffIcon,
+  ShieldXIcon,
   UserPlusIcon,
   Volume2Icon,
   VolumeXIcon,
@@ -94,6 +97,9 @@ export const NotificationView = ({ item }: { item: Notification }) => {
       ? <> <span className="font-semibold">tipped</span> <CirclePlusIcon className="-mb-0.5" size={16} strokeWidth={2.4} /></> 
       : <> <span className="font-semibold">{item.actionType === "PostAction" ? "performed an action on" : "acted"}</span> <CirclePlusIcon className="-mb-0.5" size={16} strokeWidth={2.4} /></>,
     Quote: <> <span className="font-semibold">quoted</span> <MessageSquareQuoteIcon className="-mb-0.5" size={16} strokeWidth={2.4} /></>,
+    TokenDistributed: <> <span className="font-semibold">You received a reward</span> <GiftIcon className="-mb-0.5" size={16} strokeWidth={2.4} /></>,
+    GroupMembershipRequestApproved: <> <span className="font-semibold">Your group membership was approved</span> <ShieldCheckIcon className="-mb-0.5" size={16} strokeWidth={2.4} /></>,
+    GroupMembershipRequestRejected: <> <span className="font-semibold">Your group membership was rejected</span> <ShieldXIcon className="-mb-0.5" size={16} strokeWidth={2.4} /></>,
   };
 
   const maxUsersPerNotification = 5;
@@ -287,17 +293,54 @@ export const NotificationView = ({ item }: { item: Notification }) => {
             >
               <CardContent className="flex h-fit w-full max-w-3xl flex-row gap-4 p-2 sm:p-4">
                 <div className="shrink-0 grow-0 rounded-full">
-                  <UserAvatarArray users={users} amountTruncated={wasTruncated ? amountTruncated : undefined} />
+                  {item.type === "GroupMembershipRequestApproved" ||
+                  item.type === "GroupMembershipRequestRejected" ? (
+                    <div className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20">
+                      {item.type === "GroupMembershipRequestApproved" && (
+                        <ShieldCheckIcon className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
+                      )}
+                      {item.type === "GroupMembershipRequestRejected" && (
+                        <ShieldXIcon className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
+                      )}
+                    </div>
+                  ) : (
+                    <UserAvatarArray users={users} amountTruncated={wasTruncated ? amountTruncated : undefined} />
+                  )}
                 </div>
                 <div className="flex flex-col shrink grow gap-1 place-content-center w-full">
                   <div className="flex flex-row items-center justify-between w-full gap-2 select-none">
                     <div className="flex flex-wrap items-center gap-1 truncate text-ellipsis overflow-hidden">
-                      <span>{usersText}</span>
-                      <span className="flex flex-row gap-1 justify-center place-items-center">{notificationText}</span>
+                      {item.type === "GroupMembershipRequestApproved" ||
+                      item.type === "GroupMembershipRequestRejected" ? (
+                        <span className="flex flex-row gap-1 justify-center place-items-center">
+                          {notificationText}
+                        </span>
+                      ) : item.type === "TokenDistributed" ? (
+                        <span className="flex flex-wrap items-center gap-1">
+                          {notificationText}
+                          {item.tokenAmount && item.tokenSymbol && (
+                            <span className="font-semibold">
+                              {item.tokenSymbol === "GHO" 
+                                ? `$${Number.parseFloat(item.tokenAmount).toFixed(2)}`
+                                : `${Number.parseFloat(item.tokenAmount).toLocaleString()} ${item.tokenSymbol}`
+                              }
+                            </span>
+                          )}
+                        </span>
+                      ) : (
+                        <>
+                          <span>{usersText}</span>
+                          <span className="flex flex-row gap-1 justify-center place-items-center">
+                            {notificationText}
+                          </span>
+                        </>
+                      )}
                     </div>
-                    <span className="text-muted-foreground/60 shrink-0">
-                      <TimeElapsedSince date={item.createdAt} />
-                    </span>
+                    {item.createdAt && (
+                      <span className="text-muted-foreground/60 shrink-0">
+                        <TimeElapsedSince date={item.createdAt} />
+                      </span>
+                    )}
                   </div>
 
                   {(originalPostContent || originalPostImage) && (
@@ -309,12 +352,12 @@ export const NotificationView = ({ item }: { item: Notification }) => {
                       }`}
                       className="block rounded "
                     >
-                      <div className="flex flex-row items-center gap-2 text-muted-foreground/60 text-sm line-clamp-1 text-ellipsis overflow-hidden">
+                      <div className="flex flex-row items-start gap-3 text-muted-foreground/60 text-sm line-clamp-1 text-ellipsis overflow-hidden">
                         {originalPostImage && (
                           <img
                             src={originalPostImage}
                             alt=""
-                            className="w-6 h-6 object-cover rounded opacity-60 grayscale"
+                            className="w-12 h-12 object-cover rounded opacity-60 grayscale shrink-0"
                           />
                         )}
                         {originalPostContent && (
@@ -333,6 +376,23 @@ export const NotificationView = ({ item }: { item: Notification }) => {
                         )}
                       </div>
                     </Link>
+                  )}
+
+
+                  {item.type === "GroupMembershipRequestApproved" && item.groupName && (
+                    <div className="flex flex-row items-center gap-2 text-foreground text-sm font-medium bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800/30 rounded-lg px-3 py-2">
+                      <ShieldCheckIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                      <span className="text-blue-700 dark:text-blue-300">Welcome to {item.groupName}!</span>
+                    </div>
+                  )}
+
+                  {item.type === "GroupMembershipRequestRejected" && item.groupName && (
+                    <div className="flex flex-row items-center gap-2 text-foreground text-sm font-medium bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800/30 rounded-lg px-3 py-2">
+                      <ShieldXIcon className="w-4 h-4 text-red-600 dark:text-red-400" />
+                      <span className="text-red-700 dark:text-red-300">
+                        Request to join {item.groupName} was declined
+                      </span>
+                    </div>
                   )}
 
                   {showReactions && (

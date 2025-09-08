@@ -1,4 +1,4 @@
-import { lensGroupToGroup } from "@cartel-sh/ui";
+import { lensGroupToGroup } from "~/utils/lens/converters/groupConverter";
 import { fetchGroup } from "@lens-protocol/client/actions";
 import { type NextRequest, NextResponse } from "next/server";
 import { TRENDING_GROUP_ADDRESSES } from "~/constants/trendingGroups";

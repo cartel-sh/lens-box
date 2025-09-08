@@ -1,4 +1,4 @@
-import { lensGroupToGroup } from "@cartel-sh/ui";
+import { lensGroupToGroup } from "~/utils/lens/converters/groupConverter";
 import type { Group as LensGroup } from "@lens-protocol/client";
 import { GroupsOrderBy, PageSize, type Paginated, type UnexpectedError } from "@lens-protocol/client";
 import { fetchGroups } from "@lens-protocol/client/actions";

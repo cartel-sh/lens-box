@@ -4,7 +4,8 @@ import { lensItemToPost } from "./postConverter";
 import { lensAccountToUser } from "./userConverter";
 
 export function lensNotificationToNative(item: LensNotification): Notification {
-  const base = { id: (item as any).id || crypto.randomUUID() };
+  // Extract ID properly without any casting
+  const base = { id: 'id' in item ? (item as any).id : crypto.randomUUID() };
 
   switch (item.__typename) {
     case "CommentNotification":
@@ -14,7 +15,6 @@ export function lensNotificationToNative(item: LensNotification): Notification {
         actedOn: lensItemToPost(item.comment) || undefined,
         createdAt: new Date(item.comment.timestamp),
         type: "Comment",
-        __typename: "Notification",
       };
 
     case "ReactionNotification": {
@@ -26,7 +26,6 @@ export function lensNotificationToNative(item: LensNotification): Notification {
         createdAt: new Date(reaction?.reactedAt ?? Date.now()),
         type: "Reaction",
         reactionType: reaction?.reaction === "UPVOTE" ? "Upvote" : "Downvote",
-        __typename: "Notification",
       };
     }
 
@@ -38,7 +37,6 @@ export function lensNotificationToNative(item: LensNotification): Notification {
         createdAt: new Date(item.post.timestamp),
         type: "Action",
         actionType: "PostAction",
-        __typename: "Notification",
       };
 
     case "AccountActionExecutedNotification": {
@@ -50,7 +48,6 @@ export function lensNotificationToNative(item: LensNotification): Notification {
           who: [],
           createdAt: new Date(),
           type: "Action",
-          __typename: "Notification",
         };
       }
 
@@ -59,7 +56,6 @@ export function lensNotificationToNative(item: LensNotification): Notification {
       let actionType = "Unknown";
 
       const actionAny = action as any;
-      const itemAny = item as any;
 
       switch (actionAny.__typename) {
         case "TippingAccountActionExecuted":
@@ -105,7 +101,6 @@ export function lensNotificationToNative(item: LensNotification): Notification {
         createdAt,
         type: "Action",
         actionType,
-        __typename: "Notification",
       };
     }
 
@@ -115,7 +110,6 @@ export function lensNotificationToNative(item: LensNotification): Notification {
         who: item.followers.map((f) => lensAccountToUser(f.account)),
         createdAt: new Date(item.followers[0]?.followedAt ?? Date.now()),
         type: "Follow",
-        __typename: "Notification",
       };
 
     case "MentionNotification":
@@ -125,7 +119,6 @@ export function lensNotificationToNative(item: LensNotification): Notification {
         actedOn: item.post ? lensItemToPost(item.post) || undefined : undefined,
         createdAt: new Date(item.post.timestamp),
         type: "Mention",
-        __typename: "Notification",
       };
 
     case "RepostNotification":
@@ -135,7 +128,6 @@ export function lensNotificationToNative(item: LensNotification): Notification {
         actedOn: item.post ? lensItemToPost(item.post) || undefined : undefined,
         createdAt: new Date(item.post.timestamp),
         type: "Repost",
-        __typename: "Notification",
       };
 
     case "QuoteNotification":
@@ -145,13 +137,81 @@ export function lensNotificationToNative(item: LensNotification): Notification {
         actedOn: item.quote ? lensItemToPost(item.quote) || undefined : undefined,
         createdAt: new Date(item.quote.timestamp),
         type: "Quote",
-        __typename: "Notification",
       };
 
-    default:
-      console.log("Unknown notification type, falling back to Action:", {
-        typename: item.__typename,
-        item: item,
+    case "GroupMembershipRequestApprovedNotification": {
+      const groupNotification = item as any;
+      
+      return {
+        ...base,
+        who: [],
+        createdAt: groupNotification.approvedAt ? new Date(groupNotification.approvedAt) : null,
+        type: "GroupMembershipRequestApproved",
+        groupId: groupNotification.group?.id,
+        groupName: groupNotification.group?.metadata?.name,
+      };
+    }
+
+    case "GroupMembershipRequestRejectedNotification": {
+      const groupNotification = item as any;
+      
+      return {
+        ...base,
+        who: [],
+        createdAt: groupNotification.rejectedAt ? new Date(groupNotification.rejectedAt) : null,
+        type: "GroupMembershipRequestRejected",
+        groupId: groupNotification.group?.id,
+        groupName: groupNotification.group?.metadata?.name,
+      };
+    }
+
+    case "TokenDistributedNotification": {
+      const tokenNotification = item as any;
+      
+      // Parse the amount properly - it's nested in a NativeAmount object
+      let tokenAmount: string | undefined;
+      let tokenSymbol: string | undefined;
+      
+      if (tokenNotification.amount) {
+        // Handle NativeAmount structure: { __typename: "NativeAmount", asset: {...}, value: "5.239712700523971" }
+        if (tokenNotification.amount.value) {
+          const value = tokenNotification.amount.value;
+          if (typeof value === 'string' && value !== '' && !isNaN(Number(value))) {
+            tokenAmount = value;
+          }
+        }
+        
+        // Get token symbol from asset
+        if (tokenNotification.amount.asset?.symbol) {
+          tokenSymbol = tokenNotification.amount.asset.symbol;
+        } else if (tokenNotification.amount.asset?.name) {
+          tokenSymbol = tokenNotification.amount.asset.name;
+        }
+      }
+
+      // Use actionDate instead of distributedAt
+      const createdAt = tokenNotification.actionDate 
+        ? new Date(tokenNotification.actionDate) 
+        : (tokenNotification.distributedAt ? new Date(tokenNotification.distributedAt) : null);
+
+      const result = {
+        ...base,
+        who: tokenNotification.account ? [lensAccountToUser(tokenNotification.account)] : [],
+        createdAt,
+        type: "TokenDistributed" as const,
+        tokenAmount,
+        tokenSymbol,
+      };
+
+      return result;
+    }
+
+    default: {
+      const unknownItem = item as any;
+      console.warn("🚨 UNHANDLED NOTIFICATION TYPE:", {
+        typename: unknownItem.__typename,
+        availableKeys: Object.keys(unknownItem),
+        fullItem: JSON.stringify(unknownItem, null, 2)
       });
 
       return {
@@ -159,8 +219,8 @@ export function lensNotificationToNative(item: LensNotification): Notification {
         who: [],
         createdAt: new Date(),
         type: "Action",
-        actionType: typeof item.__typename === "string" ? item.__typename : "Unknown",
-        __typename: "Notification",
+        actionType: typeof unknownItem.__typename === "string" ? unknownItem.__typename : "Unknown",
       };
+    }
   }
 }

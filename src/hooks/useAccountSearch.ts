@@ -1,4 +1,4 @@
-import { lensAccountToUser } from "@cartel-sh/ui";
+import { lensAccountToUser } from "~/utils/lens/converters/userConverter";
 import { useAccounts as useLensAccounts } from "@lens-protocol/react";
 
 export function useAccountSearch(query?: string) {
