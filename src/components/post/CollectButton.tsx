@@ -183,7 +183,7 @@ export function CollectButton({ post, variant = "post" }: CollectButtonProps) {
           }
           onClick={handleCollectClick}
         /> */}
-        <Button size="sm" className="text-sm h-8 font-medium" onClick={handleCollectClick}>
+        <Button size="sm" variant={"default"} className="text-sm h-7 font-medium" onClick={handleCollectClick}>
           Collect
         </Button>
       </span>
