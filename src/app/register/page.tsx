@@ -192,8 +192,8 @@ export default function RegisterPage() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 8 * 1024 * 1024) {
-        toast.error("Image must be less than 8MB");
+      if (file.size > 125 * 1024 * 1024) {
+        toast.error("Image must be less than 125MB");
         return;
       }
 

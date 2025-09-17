@@ -43,7 +43,7 @@ import type { AnyMetadata } from "@cartel-sh/ui";
 import { useAtom } from "jotai";
 import { collectSettingsAtom } from "@/src/atoms/collectSettings";
 
-const MAX_FILE_SIZE = 8 * 1024 * 1024; // 8MB
+const MAX_FILE_SIZE = 125 * 1024 * 1024; // 125MB
 
 type MediaItem = { type: "file"; file: File; id: string } | { type: "url"; url: string; mimeType: string; id: string };
 
@@ -248,7 +248,7 @@ function ComposerContent() {
   const handleAddFiles = useCallback((acceptedFiles: File[]) => {
     const validFiles = acceptedFiles.filter((file) => {
       if (file.size > MAX_FILE_SIZE) {
-        toast.error(`${file.name} is too large. Maximum file size is 8MB.`);
+        toast.error(`${file.name} is too large. Maximum file size is 125MB.`);
         return false;
       }
       return true;
