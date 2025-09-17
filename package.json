@@ -2,6 +2,9 @@
   "name": "lens-box",
   "version": "0.9",
   "private": true,
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "scripts": {
     "build": "bunx --bun next build",
     "dev": "bunx --bun next dev --turbo",
